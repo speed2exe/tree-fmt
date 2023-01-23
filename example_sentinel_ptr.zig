@@ -14,6 +14,7 @@ pub fn main() !void {
 
     var w = std.io.getStdOut().writer();
     var tree_formatter = TreeFormatter.init(allocator, .{});
+
     var sentinel_array: [*:0]const u8 = "hello world";
 
     try tree_formatter.formatValueWithId(w, sentinel_array, "sentinel_array");

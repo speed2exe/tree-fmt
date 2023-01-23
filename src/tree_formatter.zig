@@ -123,14 +123,12 @@ pub const TreeFormatter = struct {
                         if (arg.len == 0) return;
                         try self.formatSliceValues(prefix, counts_by_address, writer, arg);
                     },
-                    .C => {
+                    .Many, .C => {
                         try writer.print(" " ++ address_fmt, .{@ptrToInt(arg)});
+                        _ = p.sentinel orelse return;
                         if (p.child == u8 and self.settings.print_u8_chars) try writer.print(" \"{s}\"", .{arg});
-                        if (p.sentinel) |_| {
-                            try self.formatSliceValues(prefix, counts_by_address, writer, std.mem.span(arg));
-                        }
+                        try self.formatSliceValues(prefix, counts_by_address, writer, std.mem.span(arg));
                     },
-                    .Many => try writer.print(" " ++ address_fmt, .{@ptrToInt(arg)}),
                 }
             },
             .Optional => {
