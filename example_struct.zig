@@ -1,5 +1,5 @@
 const std = @import("std");
-const TreeFormatter = @import("./src/tree_formatter.zig").TreeFormatter;
+const TreeFormatter = @import("./src/tree_fmt.zig").TreeFormatter;
 
 var i32_value: i32 = 42;
 

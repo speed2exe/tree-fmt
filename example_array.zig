@@ -1,6 +1,5 @@
 const std = @import("std");
-const TreeFormatter = @import("./src/tree_formatter.zig").TreeFormatter;
-const TreeFormatterSettings = @import("./src/tree_formatter.zig").TreeFormatterSettings;
+const TreeFormatter = @import("./src/tree_fmt.zig").TreeFormatter;
 
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
@@ -13,7 +12,7 @@ pub fn main() !void {
     }
 
     var w = std.io.getStdOut().writer();
-    var tree_formatter = TreeFormatter.init(allocator, TreeFormatterSettings{
+    var tree_formatter = TreeFormatter.init(allocator, .{
         .array_print_limit = 7,
         .print_u8_chars = false,
     });

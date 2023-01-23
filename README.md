@@ -17,8 +17,7 @@
 const std = @import("std");
 
 // add imports here
-const TreeFormatter = @import("./src/tree_formatter.zig").TreeFormatter;
-const TreeFormatterSettings = @import("./src/tree_formatter.zig").TreeFormatterSettings;
+const TreeFormatter = @import("./src/tree_fmt.zig").TreeFormatter;
 
 pub fn main() !void {
     // initialize your allocator

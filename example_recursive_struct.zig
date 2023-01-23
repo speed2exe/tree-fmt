@@ -1,6 +1,5 @@
 const std = @import("std");
-const TreeFormatter = @import("./src/tree_formatter.zig").TreeFormatter;
-const TreeFormtterSettings = @import("./src/tree_formatter.zig").TreeFormatterSettings;
+const TreeFormatter = @import("./src/tree_fmt.zig").TreeFormatter;
 
 const LinkedNode = struct {
     val: i32,
@@ -18,7 +17,7 @@ pub fn main() !void {
     }
 
     var w = std.io.getStdOut().writer();
-    var tree_formatter = TreeFormatter.init(allocator, TreeFormtterSettings{
+    var tree_formatter = TreeFormatter.init(allocator, .{
         .ptr_repeat_limit = 2,
     });
 

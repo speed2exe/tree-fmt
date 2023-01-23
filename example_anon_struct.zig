@@ -1,5 +1,5 @@
 const std = @import("std");
-const TreeFormatter = @import("./src/tree_formatter.zig").TreeFormatter;
+const TreeFormatter = @import("./src/tree_fmt.zig").TreeFormatter;
 
 pub fn main() !void {
     var w = std.io.getStdOut().writer();

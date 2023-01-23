@@ -1,7 +1,7 @@
-pub const TreeFormatterSettings = @import("./tree_formatter_settings.zig").TreeFormatterSettings;
-
 const std = @import("std");
 const builtin = std.builtin;
+
+const TreeFormatterSettings = @import("./tree_fmt.zig").TreeFormatterSettings;
 
 const ansi_esc_code = @import("./ansi_esc_code.zig");
 const Color = ansi_esc_code.Color;
