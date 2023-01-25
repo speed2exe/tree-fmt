@@ -46,7 +46,7 @@ pub fn main() !void {
 
 - Example output:
 ```
-sentinel_array: [*:0]const u8 @20a573 "hello world"
+sentinel_array: [*:0]const u8 @20a71e "hello world"
 ├─[0]: u8 => 104
 ├─[1]: u8 => 101
 ├─[2]: u8 => 108
@@ -56,8 +56,8 @@ sentinel_array: [*:0]const u8 @20a573 "hello world"
 ├─[6]: u8 => 119
 ├─[7]: u8 => 111
 ├─[8]: u8 => 114
-...1 item(s) not shown
-└─[10]: u8 => 100
+├─[9]: u8 => 108
+└─... (showed first 10 out of 11 items only)
 ```
 
 - You can find other examples in the root directory. To run the examples, use
@@ -66,24 +66,22 @@ sentinel_array: [*:0]const u8 @20a573 "hello world"
 ## Example
 - `std.ArrayList(u8)`
 ```
-array: array_list.ArrayListAligned(u8,null)
-├─.items: []u8 @7f139cb2e000
+.: array_list.ArrayListAligned(u8,null)
+├─.items: []u8 @7efcc912f000
 │ ├─[0]: u8 => 0
 │ ├─[1]: u8 => 1
 │ ├─[2]: u8 => 2
 │ ├─[3]: u8 => 3
 │ ├─[4]: u8 => 4
-│ ├─[5]: u8 => 5
-│ ...93 item(s) not shown
-│ └─[99]: u8 => 99
+│ └─... (showed first 5 out of 100 items only)
 ├─.capacity: usize => 105
 └─.allocator: mem.Allocator
-  ├─.ptr: *anyopaque @7fff83414258
-  └─.vtable: *const mem.Allocator.VTable @202190
+  ├─.ptr: *anyopaque @7fffadc5b3d8
+  └─.vtable: *const mem.Allocator.VTable @202a38
     └─.*: mem.Allocator.VTable
-      ├─.alloc: *const fn(*anyopaque, usize, u8, usize) ?[*]u8 @233300
-      ├─.resize: *const fn(*anyopaque, []u8, u8, usize, usize) bool @2338c0
-      └─.free: *const fn(*anyopaque, []u8, u8, usize) void @2347d0
+      ├─.alloc: *const fn(*anyopaque, usize, u8, usize) ?[*]u8 @238e00
+      ├─.resize: *const fn(*anyopaque, []u8, u8, usize, usize) bool @2393c0
+      └─.free: *const fn(*anyopaque, []u8, u8, usize) void @23a2d0
 ```
 
 - `std.AutoHashMap(u8, u8)`
@@ -91,16 +89,15 @@ array: array_list.ArrayListAligned(u8,null)
 map: hash_map.HashMap(u8,u8,hash_map.AutoContext(u8),80)
 ├─.unmanaged: hash_map.HashMapUnmanaged(u8,u8,hash_map.AutoContext(u8),80)
 │ ├─.metadata: ?[*]hash_map.HashMapUnmanaged(u8,u8,hash_map.AutoContext(u8),80).Metadata
-│ │ └─.?: [*]hash_map.HashMapUnmanaged(u8,u8,hash_map.AutoContext(u8),80).Metadata @7fa79df1a018
+│ │ └─.?: [*]hash_map.HashMapUnmanaged(u8,u8,hash_map.AutoContext(u8),80).Metadata @7f5ea0bc7018
 │ ├─.size: u32 => 100
 │ └─.available: u32 => 2
 ├─.allocator: mem.Allocator
-│ ├─.ptr: *anyopaque @7ffec627cf50
-│ └─.vtable: *const mem.Allocator.VTable @202190
+│ ├─.ptr: *anyopaque @7ffe61d91c30
+│ └─.vtable: *const mem.Allocator.VTable @2033e0
 │   └─.*: mem.Allocator.VTable
-│     ├─.alloc: *const fn(*anyopaque, usize, u8, usize) ?[*]u8 @2340e0
-│     ├─.resize: *const fn(*anyopaque, []u8, u8, usize, usize) bool @2346a0
-│     └─.free: *const fn(*anyopaque, []u8, u8, usize) void @2355b0
-└─.ctx: hash_map.AutoContext(u8) => {}
+│     ├─.alloc: *const fn(*anyopaque, usize, u8, usize) ?[*]u8 @239470
+│     ├─.resize: *const fn(*anyopaque, []u8, u8, usize, usize) bool @239a30
+│     └─.free: *const fn(*anyopaque, []u8, u8, usize) void @23a940
+└─.ctx: hash_map.AutoContext(u8) => .{}
 ```
-

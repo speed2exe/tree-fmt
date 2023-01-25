@@ -13,17 +13,14 @@ pub fn main() !void {
 
     var w = std.io.getStdOut().writer();
     var tree_formatter = TreeFormatter.init(allocator, .{
-        .array_print_limit = 7,
+        .array_print_limit = 5,
         .print_u8_chars = false,
     });
 
-    var array_list = std.ArrayList(u8).init(allocator);
-    defer array_list.deinit();
-
-    var i: u8 = 0;
-    while (i < 100) : (i += 1) {
-        try array_list.append(i);
+    var array: [128]u8 = undefined;
+    for (array) |*e, i| {
+        e.* = @intCast(u8, i);
     }
 
-    try tree_formatter.formatValueWithId(w, array_list, "array");
+    try tree_formatter.formatValueWithId(w, array, "array");
 }
