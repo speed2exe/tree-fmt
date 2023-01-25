@@ -207,8 +207,6 @@ pub const TreeFormatter = struct {
                 return;
             }
 
-            std.debug.print("limit not reached", .{});
-
             try self.formatArrayChildValues(writer, .non_last, array[0 .. array.len - 1]);
             try self.formatIndexedValueComptime(writer, .last, array[array.len - 1], array.len - 1);
         }
