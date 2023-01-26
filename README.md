@@ -1,7 +1,7 @@
 # Zig Tree Formattar
 - Tree-like formatter for Zig Programming Language
-- This library pretty prints out Zig Values for you debugging needs.
-- This library is in development, if you face any issue with formatting, kindly open an issue.
+- This library pretty prints out Zig Values for your debugging needs.
+- This library is in continuous development, if you face any issue with formatting, kindly open an issue.
 
 ![Screenshot](./images/screenshot.png)
 
