@@ -19,6 +19,9 @@ pub const TreeFormatter = struct {
     const ptr_repeat = comptimeInColor(Color.bright_black, " (Repeated)");
     const pointer_dereference = comptimeInColor(Color.yellow, ".*");
     const optional_unwrap = comptimeInColor(Color.yellow, ".?");
+    const multi_array_list_slice = comptimeInColor(Color.green, ".slice()");
+    const multi_array_list_slice_items = comptimeInColor(Color.green, ".items");
+    const multi_array_list_get = comptimeInColor(Color.green, ".get");
     const ChildPrefix = enum {
         non_last,
         last,
@@ -68,17 +71,17 @@ pub const TreeFormatter = struct {
         settings: TreeFormatterSettings,
 
         fn formatValueRecursive(self: *Instance, writer: anytype, arg: anytype) !void {
-            const arg_type = @TypeOf(arg);
-            try writer.print("{s}{s}", .{
-                comptimeInColor(Color.bright_black, ": "),
-                comptimeInColor(Color.cyan, @typeName(arg_type)),
-            });
+            try writeTypeName(writer, arg);
 
+            const arg_type = @TypeOf(arg);
             switch (@typeInfo(arg_type)) {
                 .Struct => |s| {
                     if (s.fields.len == 0) {
                         try writer.writeAll(empty);
                         return;
+                    }
+                    if (self.settings.format_multi_array_list and isMultiArrayList(arg_type)) {
+                        try self.formatStdMultiArrayListValues(writer, arg, arg_type);
                     }
                     try self.formatFieldValues(writer, arg, s);
                 },
@@ -180,20 +183,21 @@ pub const TreeFormatter = struct {
 
         inline fn formatValueRecursiveIndented(self: *Instance, writer: anytype, child_prefix: ChildPrefix, arg: anytype) anyerror!void {
             const backup_len = self.prefix.items.len;
+            defer self.prefix.shrinkRetainingCapacity(backup_len);
+
             switch (child_prefix) {
                 inline .non_last => try self.prefix.appendSlice(indent_bar),
                 inline .last => try self.prefix.appendSlice(indent_blank),
             }
             try self.formatValueRecursive(writer, arg);
-            self.prefix.shrinkRetainingCapacity(backup_len);
         }
 
-        inline fn writeIndexingLimitMessage(self: *Instance, writer: anytype, len: usize) !void {
+        inline fn writeIndexingLimitMessage(self: *Instance, writer: anytype, limit: usize, len: usize) !void {
             try self.printOnNewLine(
                 writer,
                 .last,
                 "..." ++ comptimeInColor(Color.bright_black, " (showed first {d} out of {d} items only)"),
-                .{ self.settings.array_print_limit, len },
+                .{ limit, len },
             );
         }
 
@@ -203,7 +207,7 @@ pub const TreeFormatter = struct {
                     if (index >= self.settings.array_print_limit) break;
                     try self.formatIndexedValueComptime(writer, .non_last, item, index);
                 }
-                try self.writeIndexingLimitMessage(writer, array.len);
+                try self.writeIndexingLimitMessage(writer, self.settings.array_print_limit, array.len);
                 return;
             }
 
@@ -223,13 +227,13 @@ pub const TreeFormatter = struct {
         }
 
         inline fn formatVectorValues(self: *Instance, writer: anytype, vector: anytype, vector_type: anytype) !void {
-            if (vector_type.len > self.settings.array_print_limit) {
+            if (vector_type.len > self.settings.vector_print_limit) {
                 comptime var i: usize = 0;
                 inline while (i < vector_type.len) : (i += 1) {
-                    if (i >= self.settings.array_print_limit) break;
+                    if (i >= self.settings.vector_print_limit) break;
                     try self.formatIndexedValueComptime(writer, .non_last, vector[i], i);
                 }
-                try self.writeIndexingLimitMessage(writer, vector_type.len);
+                try self.writeIndexingLimitMessage(writer, self.settings.vector_print_limit, vector_type.len);
                 return;
             }
 
@@ -245,10 +249,10 @@ pub const TreeFormatter = struct {
         }
 
         inline fn formatSliceValues(self: *Instance, writer: anytype, slice: anytype) !void {
-            if (slice.len > self.settings.array_print_limit) {
-                for (slice[0..self.settings.array_print_limit]) |item, index|
+            if (slice.len > self.settings.slice_print_limit) {
+                for (slice[0..self.settings.slice_print_limit]) |item, index|
                     try self.formatIndexedValue(writer, .non_last, item, index);
-                try self.writeIndexingLimitMessage(writer, slice.len);
+                try self.writeIndexingLimitMessage(writer, self.settings.slice_print_limit, slice.len);
                 return;
             }
 
@@ -282,6 +286,43 @@ pub const TreeFormatter = struct {
             }
         }
 
+        inline fn formatStdMultiArrayListValues(self: *Instance, writer: anytype, arr: anytype, comptime arr_type: type) !void {
+            const slice = arr.slice();
+            try self.writeComptimeOnNewLine(writer, .non_last, multi_array_list_slice);
+            try writeTypeName(writer, slice);
+
+            const backup_len = self.prefix.items.len;
+            try self.prefix.appendSlice(indent_bar);
+            try self.writeComptimeOnNewLine(writer, .non_last, multi_array_list_slice_items);
+            const fields = @typeInfo(arr_type.Field).Enum.fields;
+            inline for (fields) |field, index| {
+                const child_prefix = if (index == fields.len - 1) .last else .non_last;
+                try self.prefix.appendSlice(indent_bar);
+                try self.printOnNewLine(writer, child_prefix, comptimeInColor(Color.green, "(.{s})"), .{field.name});
+                const items = slice.items(@intToEnum(arr_type.Field, index));
+                try self.formatValueRecursiveIndented(writer, child_prefix, items);
+                self.prefix.shrinkRetainingCapacity(backup_len);
+            }
+
+            try self.writeComptimeOnNewLine(writer, .non_last, multi_array_list_get);
+            var index: usize = 0;
+            while (index < slice.len) : (index += 1) {
+                try self.prefix.appendSlice(indent_bar);
+                defer self.prefix.shrinkRetainingCapacity(backup_len);
+                if (index > self.settings.multi_array_list_get_limit) {
+                    try self.writeIndexingLimitMessage(writer, self.settings.multi_array_list_get_limit, slice.len);
+                    return;
+                }
+                if (index == slice.len - 1) {
+                    try self.printOnNewLine(writer, .last, comptimeInColor(Color.green, "({d})"), .{index});
+                    try self.formatValueRecursiveIndented(writer, .last, arr.get(index));
+                    return;
+                }
+                try self.printOnNewLine(writer, .non_last, comptimeInColor(Color.green, "({d})"), .{index});
+                try self.formatValueRecursiveIndented(writer, .non_last, arr.get(index));
+            }
+        }
+
         inline fn printOnNewLine(self: *Instance, writer: anytype, child_prefix: ChildPrefix, comptime format: []const u8, args: anytype) !void {
             try writer.print("\n{s}" ++ child_prefix.bytes(), .{self.prefix.items});
             try writer.print(format, args);
@@ -293,6 +334,18 @@ pub const TreeFormatter = struct {
     };
 };
 
+inline fn writeTypeName(writer: anytype, arg: anytype) !void {
+    try writer.print("{s}{s}", .{
+        comptimeInColor(Color.bright_black, ": "),
+        comptimeInColor(Color.cyan, @typeName(@TypeOf(arg))),
+    });
+}
+
 inline fn isComptime(val: anytype) bool {
     return @typeInfo(@TypeOf(.{val})).Struct.fields[0].is_comptime;
+}
+
+inline fn isMultiArrayList(comptime T: type) bool {
+    // Should be enough to check for MultiArrayList
+    return std.mem.containsAtLeast(u8, @typeName(T), 1, "MultiArrayList") and @hasDecl(T, "Elem") and @hasDecl(T, "Field") and @hasDecl(T, "Slice");
 }

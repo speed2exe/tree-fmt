@@ -1,7 +1,8 @@
 pub const TreeFormatterSettings = struct {
-    /// limits the number of children to print
-    /// affects Arrays, Slice, Vector, minimum 1
-    array_print_limit: usize = 10,
+    array_print_limit: usize = 5,
+    slice_print_limit: usize = 5,
+    vector_print_limit: usize = 5,
+    multi_array_list_get_limit: usize = 5,
 
     /// if []u8 should be printed as a string
     /// affects Arrays, Slice, Vector
@@ -12,4 +13,7 @@ pub const TreeFormatterSettings = struct {
 
     /// limits the number of children to print
     type_print_limit: usize = 1,
+
+    /// if allowed to format multi array list (std.MultiArrayList)
+    format_multi_array_list: bool = true,
 };

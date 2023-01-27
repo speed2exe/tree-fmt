@@ -20,6 +20,7 @@ pub const Color = enum {
     cyan,
     yellow,
     blue,
+    green,
 
     inline fn toEscapeCode(self: Color) []const u8 {
         return switch (self) {
@@ -27,6 +28,7 @@ pub const Color = enum {
             inline .cyan => "\x1b[36m",
             inline .yellow => "\x1b[33m",
             inline .blue => "\x1b[34m",
+            inline .green => "\x1b[32m",
         };
     }
 };
