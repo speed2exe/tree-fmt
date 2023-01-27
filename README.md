@@ -169,3 +169,53 @@ multi_array_list: multi_array_list.MultiArrayList(example_multi_array_list.Perso
 ├─.len: usize => 7
 └─.capacity: usize => 8
 ```
+
+- `multi_array_list.MultiArrayList(zig.Ast.TokenList__struct_4206).Slice`
+```
+ast: multi_array_list.MultiArrayList(zig.Ast.TokenList__struct_4206).Slice
+├─.toMultiArrayList(): multi_array_list.MultiArrayList(zig.Ast.TokenList__struct_4206)
+│ ├─.slice(): multi_array_list.MultiArrayList(zig.Ast.TokenList__struct_4206).Slice
+│ │ └─.items
+│ │   ├─(.tag): []zig.tokenizer.Token.Tag @7f95660d8098
+│ │   │ ├─[0]: zig.tokenizer.Token.Tag => zig.tokenizer.Token.Tag.keyword_const (86)
+│ │   │ ├─[1]: zig.tokenizer.Token.Tag => zig.tokenizer.Token.Tag.identifier (2)
+│ │   │ ├─[2]: zig.tokenizer.Token.Tag => zig.tokenizer.Token.Tag.equal (12)
+│ │   │ ├─[3]: zig.tokenizer.Token.Tag => zig.tokenizer.Token.Tag.builtin (7)
+│ │   │ ├─[4]: zig.tokenizer.Token.Tag => zig.tokenizer.Token.Tag.l_paren (16)
+│ │   │ └─... (showed first 5 out of 31 items only)
+│ │   └─(.start): []u32 @7f95660d8000
+│ │     ├─[0]: u32 => 1
+│ │     ├─[1]: u32 => 7
+│ │     ├─[2]: u32 => 11
+│ │     ├─[3]: u32 => 13
+│ │     ├─[4]: u32 => 20
+│ │     └─... (showed first 5 out of 31 items only)
+│ ├─.get
+│ │ ├─(0): zig.Ast.TokenList__struct_4206
+│ │ │ ├─.tag: zig.tokenizer.Token.Tag => zig.tokenizer.Token.Tag.keyword_const (86)
+│ │ │ └─.start: u32 => 1
+│ │ ├─(1): zig.Ast.TokenList__struct_4206
+│ │ │ ├─.tag: zig.tokenizer.Token.Tag => zig.tokenizer.Token.Tag.identifier (2)
+│ │ │ └─.start: u32 => 7
+│ │ ├─(2): zig.Ast.TokenList__struct_4206
+│ │ │ ├─.tag: zig.tokenizer.Token.Tag => zig.tokenizer.Token.Tag.equal (12)
+│ │ │ └─.start: u32 => 11
+│ │ ├─(3): zig.Ast.TokenList__struct_4206
+│ │ │ ├─.tag: zig.tokenizer.Token.Tag => zig.tokenizer.Token.Tag.builtin (7)
+│ │ │ └─.start: u32 => 13
+│ │ ├─(4): zig.Ast.TokenList__struct_4206
+│ │ │ ├─.tag: zig.tokenizer.Token.Tag => zig.tokenizer.Token.Tag.l_paren (16)
+│ │ │ └─.start: u32 => 20
+│ │ ├─(5): zig.Ast.TokenList__struct_4206
+│ │ │ ├─.tag: zig.tokenizer.Token.Tag => zig.tokenizer.Token.Tag.string_literal (3)
+│ │ │ └─.start: u32 => 21
+│ │ └─... (showed first 5 out of 31 items only)
+│ ├─.bytes: [*]align(4) u8 @7f95660d8000
+│ ├─.len: usize => 31
+│ └─.capacity: usize => 38
+├─.ptrs: [2][*]u8
+│ ├─[0]: [*]u8 @7f95660d8098
+│ └─[1]: [*]u8 @7f95660d8000
+├─.len: usize => 31
+└─.capacity: usize => 38
+```

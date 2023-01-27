@@ -21,7 +21,7 @@ pub fn main() !void {
     defer multi_array_list.deinit(allocator);
 
     comptime var i: u8 = 0;
-    inline while (i < 7) : (i += 1) {
+    inline while (i < 3) : (i += 1) {
         try multi_array_list.append(allocator, .{
             .id = i,
             .age = i,
