@@ -312,7 +312,7 @@ pub const TreeFormatter = struct {
                 defer self.prefix.shrinkRetainingCapacity(backup_len);
                 try self.prefix.appendSlice(indent_bar);
 
-                if (index > self.settings.multi_array_list_get_limit)
+                if (index == self.settings.multi_array_list_get_limit)
                     return try self.writeIndexingLimitMessage(writer, self.settings.multi_array_list_get_limit, arr.len);
                 if (index == arr.len - 1) {
                     try self.printOnNewLine(writer, .last, comptimeInColor(Color.green, "({d})"), .{index});

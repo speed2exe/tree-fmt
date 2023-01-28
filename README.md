@@ -122,33 +122,33 @@ map: hash_map.HashMap(u8,u8,hash_map.AutoContext(u8),80)
 ```
 multi_array_list: multi_array_list.MultiArrayList(example_multi_array_list.Person)
 ├─.slice(): multi_array_list.MultiArrayList(example_multi_array_list.Person).Slice
-│ ├─.items
-│ │ ├─(.id): []u64 @7f410ae8a000
-│ │ │ ├─[0]: u64 => 0
-│ │ │ ├─[1]: u64 => 1
-│ │ │ ├─[2]: u64 => 2
-│ │ │ ├─[3]: u64 => 3
-│ │ │ ├─[4]: u64 => 4
-│ │ │ └─... (showed first 5 out of 7 items only)
-│ ├─(.age): []u8 @7f410ae8a080
-│ │ ├─[0]: u8 => 0
-│ │ ├─[1]: u8 => 1
-│ │ ├─[2]: u8 => 2
-│ │ ├─[3]: u8 => 3
-│ │ ├─[4]: u8 => 4
-│ │ └─... (showed first 5 out of 7 items only)
-│ └─(.car): []example_multi_array_list.Car @7f410ae8a040
-│   ├─[0]: example_multi_array_list.Car
-│   │ └─.license_plate_no: u64 => 555
-│   ├─[1]: example_multi_array_list.Car
-│   │ └─.license_plate_no: u64 => 555
-│   ├─[2]: example_multi_array_list.Car
-│   │ └─.license_plate_no: u64 => 555
-│   ├─[3]: example_multi_array_list.Car
-│   │ └─.license_plate_no: u64 => 555
-│   ├─[4]: example_multi_array_list.Car
-│   │ └─.license_plate_no: u64 => 555
-│   └─... (showed first 5 out of 7 items only)
+│ └─.items
+│   ├─(.id): []u64 @7f8cf20c3000
+│   │ ├─[0]: u64 => 0
+│   │ ├─[1]: u64 => 1
+│   │ ├─[2]: u64 => 2
+│   │ ├─[3]: u64 => 3
+│   │ ├─[4]: u64 => 4
+│   │ └─... (showed first 5 out of 7 items only)
+│   ├─(.age): []u8 @7f8cf20c3080
+│   │ ├─[0]: u8 => 0
+│   │ ├─[1]: u8 => 1
+│   │ ├─[2]: u8 => 2
+│   │ ├─[3]: u8 => 3
+│   │ ├─[4]: u8 => 4
+│   │ └─... (showed first 5 out of 7 items only)
+│   └─(.car): []example_multi_array_list.Car @7f8cf20c3040
+│     ├─[0]: example_multi_array_list.Car
+│     │ └─.license_plate_no: u64 => 555
+│     ├─[1]: example_multi_array_list.Car
+│     │ └─.license_plate_no: u64 => 555
+│     ├─[2]: example_multi_array_list.Car
+│     │ └─.license_plate_no: u64 => 555
+│     ├─[3]: example_multi_array_list.Car
+│     │ └─.license_plate_no: u64 => 555
+│     ├─[4]: example_multi_array_list.Car
+│     │ └─.license_plate_no: u64 => 555
+│     └─... (showed first 5 out of 7 items only)
 ├─.get
 │ ├─(0): example_multi_array_list.Person
 │ │ ├─.id: u64 => 0
@@ -170,18 +170,8 @@ multi_array_list: multi_array_list.MultiArrayList(example_multi_array_list.Perso
 │ │ ├─.age: u8 => 3
 │ │ └─.car: example_multi_array_list.Car
 │ │   └─.license_plate_no: u64 => 555
-│ ├─(4): example_multi_array_list.Person
-│ │ ├─.id: u64 => 4
-│ │ ├─.age: u8 => 4
-│ │ └─.car: example_multi_array_list.Car
-│ │   └─.license_plate_no: u64 => 555
-│ ├─(5): example_multi_array_list.Person
-│ │ ├─.id: u64 => 5
-│ │ ├─.age: u8 => 5
-│ │ └─.car: example_multi_array_list.Car
-│ │   └─.license_plate_no: u64 => 555
-│ └─... (showed first 5 out of 7 items only)
-├─.bytes: [*]align(8) u8 @7f410ae8a000
+│ └─... (showed first 4 out of 7 items only)
+├─.bytes: [*]align(8) u8 @7f8cf20c3000
 ├─.len: usize => 7
 └─.capacity: usize => 8
 ```
