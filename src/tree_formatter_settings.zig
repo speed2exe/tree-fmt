@@ -1,7 +1,8 @@
 pub const TreeFormatterSettings = struct {
-    array_print_limit: usize = 5,
-    slice_print_limit: usize = 5,
-    vector_print_limit: usize = 5,
+    array_elem_limit: usize = 5,
+    slice_elem_limit: usize = 5,
+    vector_elem_limit: usize = 5,
+    hash_map_entry_limit: usize = 5,
     multi_array_list_get_limit: usize = 5,
 
     /// if []u8 should be printed as a string
@@ -12,8 +13,11 @@ pub const TreeFormatterSettings = struct {
     ptr_repeat_limit: usize = 1,
 
     /// limits the number of children to print
-    type_print_limit: usize = 1,
+    type_print_limit: usize = 1, //TODO
 
     /// if allowed to format multi array list (std.MultiArrayList)
     format_multi_array_list: bool = true,
+
+    /// if allowed to format hash map (std.HashMap)
+    format_hash_map_unmanaged: bool = true,
 };

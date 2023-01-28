@@ -88,17 +88,33 @@ sentinel_array: [*:0]const u8 @20a71e "hello world"
 ```
 map: hash_map.HashMap(u8,u8,hash_map.AutoContext(u8),80)
 ├─.unmanaged: hash_map.HashMapUnmanaged(u8,u8,hash_map.AutoContext(u8),80)
+│ ├─.iterator()
+│ │ ├─.next(): hash_map.HashMapUnmanaged(u8,u8,hash_map.AutoContext(u8),80).Entry
+│ │ │ ├─.key_ptr: *u8 @7fcad47f5021
+│ │ │ │ └─.*: u8 => 1
+│ │ │ └─.value_ptr: *u8 @7fcad47f5029
+│ │ │   └─.*: u8 => 2
+│ │ ├─.next(): hash_map.HashMapUnmanaged(u8,u8,hash_map.AutoContext(u8),80).Entry
+│ │ │ ├─.key_ptr: *u8 @7fcad47f5022
+│ │ │ │ └─.*: u8 => 0
+│ │ │ └─.value_ptr: *u8 @7fcad47f502a
+│ │ │   └─.*: u8 => 0
+│ │ └─.next(): hash_map.HashMapUnmanaged(u8,u8,hash_map.AutoContext(u8),80).Entry
+│ │   ├─.key_ptr: *u8 @7fcad47f5026
+│ │   │ └─.*: u8 => 2
+│ │   └─.value_ptr: *u8 @7fcad47f502e
+│ │     └─.*: u8 => 4
 │ ├─.metadata: ?[*]hash_map.HashMapUnmanaged(u8,u8,hash_map.AutoContext(u8),80).Metadata
-│ │ └─.?: [*]hash_map.HashMapUnmanaged(u8,u8,hash_map.AutoContext(u8),80).Metadata @7f5ea0bc7018
-│ ├─.size: u32 => 100
-│ └─.available: u32 => 2
+│ │ └─.?: [*]hash_map.HashMapUnmanaged(u8,u8,hash_map.AutoContext(u8),80).Metadata @7fcad47f5018
+│ ├─.size: u32 => 3
+│ └─.available: u32 => 3
 ├─.allocator: mem.Allocator
-│ ├─.ptr: *anyopaque @7ffe61d91c30
-│ └─.vtable: *const mem.Allocator.VTable @2033e0
+│ ├─.ptr: *anyopaque @7ffc3b6baca0
+│ └─.vtable: *const mem.Allocator.VTable @2045b8
 │   └─.*: mem.Allocator.VTable
-│     ├─.alloc: *const fn(*anyopaque, usize, u8, usize) ?[*]u8 @239470
-│     ├─.resize: *const fn(*anyopaque, []u8, u8, usize, usize) bool @239a30
-│     └─.free: *const fn(*anyopaque, []u8, u8, usize) void @23a940
+│     ├─.alloc: *const fn(*anyopaque, usize, u8, usize) ?[*]u8 @2433a0
+│     ├─.resize: *const fn(*anyopaque, []u8, u8, usize, usize) bool @243960
+│     └─.free: *const fn(*anyopaque, []u8, u8, usize) void @244870
 └─.ctx: hash_map.AutoContext(u8) => .{}
 ```
 

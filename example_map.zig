@@ -18,7 +18,7 @@ pub fn main() !void {
     defer map.deinit();
 
     var i: u8 = 0;
-    while (i < 100) : (i += 1) {
+    while (i < 3) : (i += 1) {
         try map.put(i, i * 2);
     }
 

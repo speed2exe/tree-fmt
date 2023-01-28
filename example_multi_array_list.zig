@@ -13,7 +13,7 @@ pub fn main() !void {
 
     var w = std.io.getStdOut().writer();
     var tree_formatter = TreeFormatter.init(allocator, .{
-        .array_print_limit = 5,
+        .multi_array_list_get_limit = 4,
         .print_u8_chars = false,
     });
 
