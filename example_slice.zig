@@ -1,5 +1,5 @@
 const std = @import("std");
-const TreeFormatter = @import("./src/tree_fmt.zig").TreeFormatter;
+const treeFormatter = @import("./src/tree_fmt.zig").treeFormatter;
 
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
@@ -12,7 +12,7 @@ pub fn main() !void {
     }
 
     var w = std.io.getStdOut().writer();
-    var tree_formatter = TreeFormatter.init(allocator, .{
+    var tree_formatter = treeFormatter(allocator, w, .{
         .array_elem_limit = 1,
         .print_u8_chars = false,
     });
@@ -25,9 +25,8 @@ pub fn main() !void {
         try array_list.append(i);
     }
 
-    try tree_formatter.formatValueWithId(w, array_list, "array");
-
-    try tree_formatter.formatValueWithId(w, std.mem.span(array_list.items[0..0]), "array");
-    try tree_formatter.formatValueWithId(w, std.mem.span(array_list.items[0..1]), "array");
-    try tree_formatter.formatValueWithId(w, std.mem.span(array_list.items[0..2]), "array");
+    try tree_formatter.formatValueWithId(array_list, "array");
+    try tree_formatter.formatValueWithId(std.mem.span(array_list.items[0..0]), "slice");
+    try tree_formatter.formatValueWithId(std.mem.span(array_list.items[0..1]), "slice");
+    try tree_formatter.formatValueWithId(std.mem.span(array_list.items[0..2]), "slice");
 }

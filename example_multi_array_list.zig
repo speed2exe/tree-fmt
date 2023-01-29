@@ -1,5 +1,5 @@
 const std = @import("std");
-const TreeFormatter = @import("./src/tree_fmt.zig").TreeFormatter;
+const treeFormatter = @import("./src/tree_fmt.zig").treeFormatter;
 
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
@@ -12,12 +12,12 @@ pub fn main() !void {
     }
 
     var w = std.io.getStdOut().writer();
-    var tree_formatter = TreeFormatter.init(allocator, .{
+    var tree_formatter = treeFormatter(allocator, w, .{
         .multi_array_list_get_limit = 4,
         .print_u8_chars = false,
     });
 
-    var multi_array_list = std.MultiArrayList(Person){};
+    var multi_array_list: std.MultiArrayList(Person) = .{};
     defer multi_array_list.deinit(allocator);
 
     comptime var i: u8 = 0;
@@ -28,7 +28,7 @@ pub fn main() !void {
         });
     }
 
-    try tree_formatter.formatValueWithId(w, multi_array_list, "multi_array_list");
+    try tree_formatter.formatValueWithId(multi_array_list, "multi_array_list");
 }
 
 const Person = struct {

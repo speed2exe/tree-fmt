@@ -1,5 +1,5 @@
 const std = @import("std");
-const TreeFormatter = @import("./src/tree_fmt.zig").TreeFormatter;
+const treeFormatter = @import("./src/tree_fmt.zig").treeFormatter;
 
 var i32_value: i32 = 42;
 
@@ -105,7 +105,7 @@ pub fn main() !void {
     }
 
     var w = std.io.getStdOut().writer();
-    var tree_formatter = TreeFormatter.init(allocator, .{});
+    var tree_formatter = treeFormatter(allocator, w, .{});
     var struct1: Struct1 = .{};
-    try tree_formatter.formatValueWithId(w, struct1, "struct1");
+    try tree_formatter.formatValueWithId(struct1, "struct1");
 }
