@@ -154,18 +154,20 @@ pub const TreeFormatter = struct {
                     }
                 },
                 .Optional => {
-                    // TODO: compilation issues
-                    if (arg) |value| {
-                        try self.writeComptimeOnNewLine(writer, .last, optional_unwrap);
-                        try self.formatValueRecursiveIndented(writer, .last, value);
-                    } else {
-                        try writer.print(" {s} null", .{arrow});
-                    }
+                    const value = arg orelse
+                        return try writer.print(" {s} null", .{arrow});
+                    try self.writeComptimeOnNewLine(writer, .last, optional_unwrap);
+                    try self.formatValueRecursiveIndented(writer, .last, value);
                 },
                 .Union => |u| {
                     if (u.fields.len == 0) return try writer.writeAll(empty);
                     if (u.tag_type) |_| return try self.formatFieldValueAtIndex(writer, arg, u, @enumToInt(arg));
-                    return try self.formatFieldValues(writer, arg, u);
+                    try self.formatFieldValues(writer, arg, u);
+                },
+                .ErrorUnion => {
+                    const value = arg catch |err|
+                        return try writer.print(" {s} {any}", .{ arrow, err });
+                    try self.formatValueRecursiveIndented(writer, .last, value);
                 },
                 .Enum => try writer.print(" {s} {} ({d})", .{ arrow, arg, @enumToInt(arg) }),
                 .Fn => try writer.print(" " ++ address_fmt, .{@ptrToInt(&arg)}),
@@ -173,7 +175,7 @@ pub const TreeFormatter = struct {
             }
         }
 
-        inline fn formatValueRecursiveIndented(self: *Instance, writer: anytype, child_prefix: ChildPrefix, arg: anytype) anyerror!void {
+        inline fn formatValueRecursiveIndented(self: *Instance, writer: anytype, child_prefix: ChildPrefix, arg: anytype) anyerror!void { // TODO: remove anyerror
             const backup_len = self.prefix.items.len;
             defer self.prefix.shrinkRetainingCapacity(backup_len);
 
