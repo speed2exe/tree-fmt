@@ -339,15 +339,18 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
             }
 
             inline fn formatMultiArrayListSlice(self: *Instance, slice: anytype) !void {
-                const arr = slice.toMultiArrayList();
-                try self.writeComptimeOnNewLine(.non_last, to_multi_array_list_method);
-                try self.writeTypeName(arr);
+                {
+                    const arr = slice.toMultiArrayList();
+                    try self.writeComptimeOnNewLine(.non_last, to_multi_array_list_method);
+                    try self.writeTypeName(arr);
 
-                const backup_len = self.prefix.items.len;
-                defer self.prefix.shrinkRetainingCapacity(backup_len);
-                try self.prefix.appendSlice(indent_bar);
+                    const backup_len = self.prefix.items.len;
+                    defer self.prefix.shrinkRetainingCapacity(backup_len);
+                    try self.prefix.appendSlice(indent_bar);
 
-                try self.formatMultiArrayList(arr, @TypeOf(arr));
+                    try self.formatMultiArrayList(arr, @TypeOf(arr));
+                }
+
                 try self.formatFieldValues(slice, @typeInfo(@TypeOf(slice)).Struct);
             }
 
