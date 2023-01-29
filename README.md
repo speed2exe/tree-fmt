@@ -22,20 +22,14 @@
 
 ### Quick Setup
 - This is the easiest way if you want to save time.
+- example is in `example_default_tree_formatter.zig`
 
 ```zig
-const TreeFormatter = @import("./src/tree_fmt.zig").TreeFormatter;
-var tree_formatter: TreeFormatter = TreeFormatter.init(std.heap.page_allocator, .{});
-var writer = std.io.getStdOut().writer();
+var tree_formatter = @import("./src/tree_fmt.zig").defaultFormatter();
 
 pub fn main() !void {
-    // your value
-    var sentinel_array: [*:0]const u8 = "hello world";
-
-    // call the method with writer and value
-    try tree_formatter.formatValueWithId(writer, sentinel_array);
+    try tree_formatter.formatValueWithId(.{ 1, 2.4, "hi" }, "some_anon_struct");
 }
-
 ```
 
 ### Proper Setup
@@ -45,7 +39,7 @@ pub fn main() !void {
 const std = @import("std");
 
 // add imports here
-const TreeFormatter = @import("./src/tree_fmt.zig").TreeFormatter;
+const treeFormatter = @import("./src/tree_fmt.zig").treeFormatter;
 
 pub fn main() !void {
     // initialize your allocator
@@ -58,21 +52,21 @@ pub fn main() !void {
         }
     }
 
-    // initialize TreeFormatter
-    var tree_formatter = TreeFormatter.init(allocator, .{
-        // you can find settings at @import("./src/tree_fmt.zig").TreeFormatterSettings;
-        // you can also leave it blank to use default settings
-    });
-
     // initialize a writer (std.io.Writer)
     // tips if you print a lot: wrap with std.io.BufferedWriter to improve performance
     var w = std.io.getStdOut().writer();
+
+    // initialize TreeFormatter with allocator and writer
+    var tree_formatter = treeFormatter(allocator, w, .{
+        // you can find settings at @import("./src/tree_fmt.zig").TreeFormatterSettings;
+        // you can also leave it blank to use default settings
+    });
 
     // initialize your value
     var sentinel_array: [*:0]const u8 = "hello world";
 
     // call the method with writer and value
-    try tree_formatter.formatValueWithId(w, sentinel_array, "sentinel_array");
+    try tree_formatter.formatValueWithId(sentinel_array, "sentinel_array");
 }
 ```
 
