@@ -1,17 +1,45 @@
-# Zig Tree Formattar
-- Tree-like formatter for Zig Programming Language
-- This library pretty prints out Zig Values for your debugging needs.
+# Tree Formattar for Zig
+- Pretty prints out Zig Values for your debugging needs.
 - This library is in continuous development, if you face any issue with formatting, kindly open an issue.
 
-![Screenshot](./images/screenshot.png)
-
 ## Objective
-- Provide a tree-like visual representation of a Zig value
+- Provide a colored tree-like visual representation of a Zig value to aid in debugging.
+
+## Features
+- Colored output to distinguish between types and values
+- Indentation to show the structure of the value
+- Special foramtters for following types due to their complexity:
+  - `std.MultiArrayList`
+  - `std.HashMapUnmanaged`
+
+## Screenshot
+![Screenshot](./images/screenshot.png)
 
 ## Usage
 - Use `git submodule` or copy the `src` folder into your project directly. This
   project will be packaged properly once the official package manager is released.
-- Below shows a simple example of how to use this library.
+- Below shows examples of how to use this library.
+
+### Quick Setup
+- This is the easiest way if you want to save time.
+
+```zig
+const TreeFormatter = @import("./src/tree_fmt.zig").TreeFormatter;
+var tree_formatter: TreeFormatter = TreeFormatter.init(std.heap.page_allocator, .{});
+var writer = std.io.getStdOut().writer();
+
+pub fn main() !void {
+    // your value
+    var sentinel_array: [*:0]const u8 = "hello world";
+
+    // call the method with writer and value
+    try tree_formatter.formatValueWithId(writer, sentinel_array);
+}
+
+```
+
+### Proper Setup
+- This is recommended, as it gives you more control over writer, allocator and settings.
 
 ```zig
 const std = @import("std");
@@ -31,9 +59,13 @@ pub fn main() !void {
     }
 
     // initialize TreeFormatter
-    var tree_formatter = TreeFormatter.init(allocator, .{});
+    var tree_formatter = TreeFormatter.init(allocator, .{
+        // you can find settings at @import("./src/tree_fmt.zig").TreeFormatterSettings;
+        // you can also leave it blank to use default settings
+    });
 
     // initialize a writer (std.io.Writer)
+    // tips if you print a lot: wrap with std.io.BufferedWriter to improve performance
     var w = std.io.getStdOut().writer();
 
     // initialize your value
