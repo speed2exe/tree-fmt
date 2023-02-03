@@ -22,7 +22,7 @@
 
 ### Quick Setup
 - This is the easiest way if you want to save time.
-- example is in `example_default_tree_formatter.zig`
+- This example is in `example_default_tree_formatter.zig`
 
 ```zig
 var tree_formatter = @import("./src/tree_fmt.zig").defaultFormatter();
@@ -31,6 +31,17 @@ pub fn main() !void {
     try tree_formatter.formatValueWithId(.{ 1, 2.4, "hi" }, "some_anon_struct");
 }
 ```
+- Output:
+```
+some_anon_struct: tuple{comptime comptime_int = 1, comptime comptime_float = 2.4, comptime *const [2:0]u8 = "hi"}
+├─.0: comptime_int => 1
+├─.1: comptime_float => 2.4e+00
+└─.2: *const [2:0]u8 @21d169
+  └─.*: [2:0]u8 hi
+    ├─[0]: u8 => 104
+    └─[1]: u8 => 105
+```
+
 
 ### Proper Setup
 - This is recommended, as it gives you more control over writer, allocator and settings.
@@ -70,7 +81,7 @@ pub fn main() !void {
 }
 ```
 
-- Example output:
+- Output:
 ```
 sentinel_array: [*:0]const u8 @20a71e "hello world"
 ├─[0]: u8 => 104
