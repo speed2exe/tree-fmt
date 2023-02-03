@@ -8,7 +8,11 @@ const Color = ansi_esc_code.Color;
 const comptimeFmtInColor = ansi_esc_code.comptimeFmtInColor;
 const comptimeInColor = ansi_esc_code.comptimeInColor;
 
-pub fn treeFormatter(allocator: std.mem.Allocator, std_io_writer: anytype, settings: TreeFormatterSettings) TreeFormatter(@TypeOf(std_io_writer)) {
+pub fn treeFormatter(
+    allocator: std.mem.Allocator,
+    std_io_writer: anytype,
+    settings: TreeFormatterSettings,
+) TreeFormatter(@TypeOf(std_io_writer)) {
     return .{
         .allocator = allocator,
         .writer = std_io_writer,
@@ -53,7 +57,11 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
         allocator: std.mem.Allocator,
         writer: StdIoWriter,
 
-        pub fn init(allocator: std.mem.Allocator, writer: StdIoWriter, settings: TreeFormatterSettings) TreeFormatter {
+        pub fn init(
+            allocator: std.mem.Allocator,
+            writer: StdIoWriter,
+            settings: TreeFormatterSettings,
+        ) TreeFormatter {
             return TreeFormatter{
                 .allocator = allocator,
                 .settings = settings,
@@ -105,14 +113,14 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                     },
                     .Array => |a| {
                         if (a.child == u8 and self.settings.print_u8_chars)
-                            try self.writer.print(" {s}", .{arg});
+                            try self.writer.print(" \"{s}\"", .{arg});
                         if (a.len == 0)
                             return try self.writer.writeAll(empty);
                         return try self.formatArrayValues(arg);
                     },
                     .Vector => |v| {
                         if (v.child == u8 and self.settings.print_u8_chars)
-                            try self.writer.print(" {s}", .{arg});
+                            try self.writer.print(" \"{s}\"", .{arg});
                         if (v.len == 0)
                             return try self.writer.writeAll(empty);
                         return try self.formatVectorValues(arg, v);
@@ -152,7 +160,8 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                             },
                             .Slice => {
                                 try self.writer.print(" " ++ address_fmt, .{@ptrToInt(arg.ptr)});
-                                if (p.child == u8 and self.settings.print_u8_chars) try self.writer.print(" \"{s}\"", .{arg});
+                                if (p.child == u8 and self.settings.print_u8_chars)
+                                    try self.writer.print(" \"{s}\"", .{arg});
                                 if (arg.len == 0) {
                                     try self.writer.writeAll(empty);
                                 } else {
@@ -162,7 +171,8 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                             .Many, .C => {
                                 try self.writer.print(" " ++ address_fmt, .{@ptrToInt(arg)});
                                 _ = p.sentinel orelse return;
-                                if (p.child == u8 and self.settings.print_u8_chars) try self.writer.print(" \"{s}\"", .{arg});
+                                if (p.child == u8 and self.settings.print_u8_chars)
+                                    try self.writer.print(" \"{s}\"", .{arg});
                                 try self.formatSliceValues(std.mem.span(arg));
                             },
                         }
@@ -174,8 +184,10 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                         try self.formatValueRecursiveIndented(.last, value);
                     },
                     .Union => |u| {
-                        if (u.fields.len == 0) return try self.writer.writeAll(empty);
-                        if (u.tag_type) |_| return try self.formatFieldValueAtIndex(arg, u, @enumToInt(arg));
+                        if (u.fields.len == 0)
+                            return try self.writer.writeAll(empty);
+                        if (u.tag_type) |_|
+                            return try self.formatFieldValueAtIndex(arg, u, @enumToInt(arg));
                         try self.formatFieldValues(arg, u);
                     },
                     .ErrorUnion => {
@@ -222,9 +234,8 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
             }
 
             inline fn formatArrayChildValues(self: *Instance, child_prefix: ChildPrefix, args: anytype) !void {
-                inline for (args) |item, index| {
+                inline for (args) |item, index|
                     try self.formatIndexedValueComptime(child_prefix, item, index);
-                }
             }
 
             inline fn formatIndexedValueComptime(self: *Instance, comptime child_prefix: ChildPrefix, item: anytype, comptime index: usize) !void {
