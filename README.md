@@ -5,8 +5,7 @@
 ## Important
 - `main` branch will be replaced by `zig-0.11.x` when Zig 0.11 is released
 - If you are already using zig version 0.11.x, you can use find the following
-  example to use tree formatter via package manager:
-  - `https://github.com/speed2exe/tree-fmt-example`
+  example to use tree formatter via package manager: https://github.com/speed2exe/tree-fmt-example
 
 ## Objective
 - Provide a colored tree-like visual representation of a Zig value to aid in debugging.
