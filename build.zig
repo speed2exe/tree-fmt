@@ -7,5 +7,8 @@ pub fn build(b: *std.Build) void {
         .target = b.standardTargetOptions(.{}),
         .optimize = b.standardOptimizeOption(.{}),
     });
+    lib.addModule("tree-fmt", b.createModule(.{
+        .source_file = .{ .path = "src/tree_fmt.zig" },
+    }));
     lib.install();
 }
