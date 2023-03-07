@@ -1,14 +1,8 @@
 const std = @import("std");
 
 pub fn build(b: *std.Build) void {
-    const lib = b.addStaticLibrary(.{
+    b.addModule(.{
         .name = "tree-fmt",
-        .root_source_file = .{ .path = "src/tree_fmt.zig" },
-        .target = b.standardTargetOptions(.{}),
-        .optimize = b.standardOptimizeOption(.{}),
+        .source_file = std.Build.FileSource.relative("src/tree_fmt.zig"),
     });
-    lib.addModule("tree-fmt", b.createModule(.{
-        .source_file = .{ .path = "src/tree_fmt.zig" },
-    }));
-    lib.install();
 }
