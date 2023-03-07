@@ -222,7 +222,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
 
             inline fn formatArrayValues(self: *Instance, array: anytype) !void {
                 if (array.len > self.settings.array_elem_limit) {
-                    inline for (array) |item, index| {
+                    inline for (array, 0..) |item, index| {
                         if (index >= self.settings.array_elem_limit) break;
                         try self.formatIndexedValueComptime(.non_last, item, index);
                     }
@@ -234,7 +234,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
             }
 
             inline fn formatArrayChildValues(self: *Instance, child_prefix: ChildPrefix, args: anytype) !void {
-                inline for (args) |item, index|
+                inline for (args, 0..) |item, index|
                     try self.formatIndexedValueComptime(child_prefix, item, index);
             }
 
@@ -266,13 +266,13 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
 
             inline fn formatSliceValues(self: *Instance, slice: anytype) !void {
                 if (slice.len > self.settings.slice_elem_limit) {
-                    for (slice[0..self.settings.slice_elem_limit]) |item, index|
+                    for (slice[0..self.settings.slice_elem_limit], 0..) |item, index|
                         try self.formatIndexedValue(.non_last, item, index);
                     return try self.writeIndexingLimitMessage(self.settings.slice_elem_limit, slice.len);
                 }
 
                 const last_index = slice.len - 1;
-                for (slice[0..last_index]) |item, index|
+                for (slice[0..last_index], 0..) |item, index|
                     try self.formatIndexedValue(.non_last, item, index);
                 try self.formatIndexedValue(.last, slice[last_index], last_index);
             }
@@ -284,7 +284,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                 // field during ReleaseSafe and Debug builds,
                 @setRuntimeSafety(false);
 
-                inline for (arg_type.fields) |field, index| {
+                inline for (arg_type.fields, 0..) |field, index| {
                     const child_prefix = if (index == arg_type.fields.len - 1) .last else .non_last;
                     try self.writeComptimeOnNewLine(child_prefix, comptimeInColor(Color.yellow, "." ++ field.name));
                     try self.formatValueRecursiveIndented(child_prefix, @field(arg, field.name));
@@ -292,7 +292,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
             }
 
             inline fn formatFieldValueAtIndex(self: *Instance, arg: anytype, arg_type: anytype, target_index: usize) !void {
-                inline for (arg_type.fields) |field, index| {
+                inline for (arg_type.fields, 0..) |field, index| {
                     if (index == target_index) {
                         try self.writeComptimeOnNewLine(.last, comptimeInColor(Color.yellow, "." ++ field.name));
                         return try self.formatValueRecursiveIndented(.last, @field(arg, field.name));
@@ -317,7 +317,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
 
                 try self.writeComptimeOnNewLine(.last, items_method);
                 const fields = @typeInfo(arr_type.Field).Enum.fields;
-                inline for (fields) |field, index| {
+                inline for (fields, 0..) |field, index| {
                     const backup_len2 = self.prefix.items.len;
                     defer self.prefix.shrinkRetainingCapacity(backup_len2);
                     try self.prefix.appendSlice(indent_blank);

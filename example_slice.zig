@@ -26,7 +26,7 @@ pub fn main() !void {
     }
 
     try tree_formatter.formatValueWithId(array_list, "array");
-    try tree_formatter.formatValueWithId(std.mem.span(array_list.items[0..0]), "slice");
-    try tree_formatter.formatValueWithId(std.mem.span(array_list.items[0..1]), "slice");
-    try tree_formatter.formatValueWithId(std.mem.span(array_list.items[0..2]), "slice");
+    try tree_formatter.formatValueWithId(@as([]u8, array_list.items[0..0]), "slice");
+    try tree_formatter.formatValueWithId(@as([]u8, array_list.items[0..1]), "slice");
+    try tree_formatter.formatValueWithId(@as([]u8, array_list.items[0..2]), "slice");
 }

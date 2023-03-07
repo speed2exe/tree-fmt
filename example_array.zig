@@ -18,7 +18,7 @@ pub fn main() !void {
     });
 
     var array: [128]u8 = undefined;
-    for (array) |*e, i| {
+    for (&array, 0..) |*e, i| {
         e.* = @intCast(u8, i);
     }
 
