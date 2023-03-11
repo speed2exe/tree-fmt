@@ -105,7 +105,7 @@ pub fn main() !void {
     }
 
     var w = std.io.getStdOut().writer();
-    var tree_formatter = treeFormatter(allocator, w, .{});
+    var tree_formatter = treeFormatter(allocator, w);
     var struct1: Struct1 = .{};
-    try tree_formatter.formatValueWithId(struct1, "struct1");
+    try tree_formatter.format(struct1, .{ .name = "struct1" });
 }

@@ -12,18 +12,18 @@ pub fn main() !void {
     }
 
     var w = std.io.getStdOut().writer();
-    var tree_formatter = treeFormatter(allocator, w, .{
-        .array_elem_limit = 5,
-        .print_u8_chars = false,
-    });
+    var tree_formatter = treeFormatter(allocator, w);
 
     var array_list = std.ArrayList(u8).init(allocator);
     defer array_list.deinit();
-    
+
     var i: u8 = 0;
     while (i < 100) : (i += 1) {
         try array_list.append(i);
     }
 
-    try tree_formatter.formatValue(array_list);
+    try tree_formatter.format(array_list, .{
+        .array_elem_limit = 5,
+        .print_u8_chars = false,
+    });
 }

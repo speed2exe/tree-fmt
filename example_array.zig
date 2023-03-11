@@ -12,15 +12,16 @@ pub fn main() !void {
     }
 
     var w = std.io.getStdOut().writer();
-    var tree_formatter = treeFormatter(allocator, w, .{
-        .array_elem_limit = 5,
-        .print_u8_chars = false,
-    });
+    var tree_formatter = treeFormatter(allocator, w);
 
     var array: [128]u8 = undefined;
     for (&array, 0..) |*e, i| {
         e.* = @intCast(u8, i);
     }
 
-    try tree_formatter.formatValueWithId(array, "array");
+    try tree_formatter.format(array, .{
+        .name = "my_array",
+        .array_elem_limit = 5,
+        .print_u8_chars = false,
+    });
 }

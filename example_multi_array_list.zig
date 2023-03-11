@@ -12,10 +12,7 @@ pub fn main() !void {
     }
 
     var w = std.io.getStdOut().writer();
-    var tree_formatter = treeFormatter(allocator, w, .{
-        .multi_array_list_get_limit = 4,
-        .print_u8_chars = false,
-    });
+    var tree_formatter = treeFormatter(allocator, w);
 
     var multi_array_list: std.MultiArrayList(Person) = .{};
     defer multi_array_list.deinit(allocator);
@@ -28,7 +25,11 @@ pub fn main() !void {
         });
     }
 
-    try tree_formatter.formatValueWithId(multi_array_list, "multi_array_list");
+    try tree_formatter.format(multi_array_list, .{
+        .name = "multi_array_list",
+        .multi_array_list_get_limit = 4,
+        .print_u8_chars = false,
+    });
 }
 
 const Person = struct {

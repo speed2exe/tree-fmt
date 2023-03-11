@@ -11,18 +11,17 @@ const comptimeInColor = ansi_esc_code.comptimeInColor;
 pub fn treeFormatter(
     allocator: std.mem.Allocator,
     std_io_writer: anytype,
-    settings: TreeFormatterSettings,
 ) TreeFormatter(@TypeOf(std_io_writer)) {
     return .{
         .allocator = allocator,
         .writer = std_io_writer,
-        .settings = settings,
     };
 }
 
 pub fn TreeFormatter(comptime StdIoWriter: type) type {
     return struct {
         const Self = @This();
+
         const arrow = comptimeFmtInColor(Color.bright_black, "=>", .{});
         const empty = " " ++ arrow ++ " .{}";
         const address_fmt = comptimeInColor(Color.blue, "@{x}");
@@ -53,7 +52,6 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
         /// type to keep count of number of times address of the same value appear
         const CountsByAddress = std.AutoHashMap(usize, usize);
 
-        settings: TreeFormatterSettings,
         allocator: std.mem.Allocator,
         writer: StdIoWriter,
 
@@ -69,11 +67,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
             };
         }
 
-        pub fn formatValue(self: Self, arg: anytype) !void {
-            return self.formatValueWithId(arg, ".");
-        }
-
-        pub fn formatValueWithId(self: Self, arg: anytype, comptime id: []const u8) !void {
+        pub fn format(self: Self, arg: anytype, settings: TreeFormatterSettings) !void {
             var prefix = std.ArrayList(u8).init(self.allocator);
             defer prefix.deinit();
             var counts_by_address = CountsByAddress.init(self.allocator);
@@ -81,10 +75,10 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
             var instance = Instance{
                 .prefix = &prefix,
                 .counts_by_address = &counts_by_address,
-                .settings = self.settings,
+                .settings = settings,
                 .writer = self.writer,
             };
-            try self.writer.print(comptimeInColor(Color.yellow, id), .{});
+            try self.writer.print(comptimeInColor(Color.yellow, "{s}"), .{settings.name});
             try instance.formatValueRecursive(arg);
             try self.writer.print("\n", .{});
         }
@@ -155,7 +149,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                                     }
                                 }
 
-                                try self.writeComptimeOnNewLine(.last, pointer_dereference);
+                                try self.writeChildComptime(.last, pointer_dereference);
                                 try self.formatValueRecursiveIndented(.last, arg.*);
                             },
                             .Slice => {
@@ -180,7 +174,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                     .Optional => {
                         const value = arg orelse
                             return try self.writer.print(" {s} null", .{arrow});
-                        try self.writeComptimeOnNewLine(.last, optional_unwrap);
+                        try self.writeChildComptime(.last, optional_unwrap);
                         try self.formatValueRecursiveIndented(.last, value);
                     },
                     .Union => |u| {
@@ -213,7 +207,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
             }
 
             inline fn writeIndexingLimitMessage(self: *Instance, limit: usize, len: usize) !void {
-                try self.printOnNewLine(
+                try self.writeChild(
                     .last,
                     "..." ++ comptimeInColor(Color.bright_black, " (showed first {d} out of {d} items only)"),
                     .{ limit, len },
@@ -239,7 +233,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
             }
 
             inline fn formatIndexedValueComptime(self: *Instance, comptime child_prefix: ChildPrefix, item: anytype, comptime index: usize) !void {
-                try self.writeComptimeOnNewLine(child_prefix, comptime comptimeFmtInColor(Color.yellow, "[{d}]", .{index}));
+                try self.writeChildComptime(child_prefix, comptime comptimeFmtInColor(Color.yellow, "[{d}]", .{index}));
                 try self.formatValueRecursiveIndented(child_prefix, item);
             }
 
@@ -260,7 +254,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
             }
 
             inline fn formatIndexedValue(self: *Instance, comptime child_prefix: ChildPrefix, item: anytype, index: usize) !void {
-                try self.printOnNewLine(child_prefix, comptime comptimeInColor(Color.yellow, "[{d}]"), .{index});
+                try self.writeChild(child_prefix, comptime comptimeInColor(Color.yellow, "[{d}]"), .{index});
                 try self.formatValueRecursiveIndented(child_prefix, item);
             }
 
@@ -286,7 +280,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
 
                 inline for (arg_type.fields, 0..) |field, index| {
                     const child_prefix = if (index == arg_type.fields.len - 1) .last else .non_last;
-                    try self.writeComptimeOnNewLine(child_prefix, comptimeInColor(Color.yellow, "." ++ field.name));
+                    try self.writeChildComptime(child_prefix, comptimeInColor(Color.yellow, "." ++ field.name));
                     try self.formatValueRecursiveIndented(child_prefix, @field(arg, field.name));
                 }
             }
@@ -294,7 +288,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
             inline fn formatFieldValueAtIndex(self: *Instance, arg: anytype, arg_type: anytype, target_index: usize) !void {
                 inline for (arg_type.fields, 0..) |field, index| {
                     if (index == target_index) {
-                        try self.writeComptimeOnNewLine(.last, comptimeInColor(Color.yellow, "." ++ field.name));
+                        try self.writeChildComptime(.last, comptimeInColor(Color.yellow, "." ++ field.name));
                         return try self.formatValueRecursiveIndented(.last, @field(arg, field.name));
                     }
                 }
@@ -308,14 +302,14 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
 
             inline fn formatMultiArrayListSliceItems(self: *Instance, arr: anytype, comptime arr_type: type) !void {
                 const slice = arr.slice();
-                try self.writeComptimeOnNewLine(.non_last, slice_method);
+                try self.writeChildComptime(.non_last, slice_method);
                 try self.writeTypeName(slice);
 
                 const backup_len = self.prefix.items.len;
                 defer self.prefix.shrinkRetainingCapacity(backup_len);
                 try self.prefix.appendSlice(indent_bar);
 
-                try self.writeComptimeOnNewLine(.last, items_method);
+                try self.writeChildComptime(.last, items_method);
                 const fields = @typeInfo(arr_type.Field).Enum.fields;
                 inline for (fields, 0..) |field, index| {
                     const backup_len2 = self.prefix.items.len;
@@ -323,14 +317,14 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                     try self.prefix.appendSlice(indent_blank);
 
                     const child_prefix = if (index == fields.len - 1) .last else .non_last;
-                    try self.printOnNewLine(child_prefix, comptimeInColor(Color.green, "(.{s})"), .{field.name});
+                    try self.writeChild(child_prefix, comptimeInColor(Color.green, "(.{s})"), .{field.name});
                     const items = slice.items(@intToEnum(arr_type.Field, index));
                     try self.formatValueRecursiveIndented(child_prefix, items);
                 }
             }
 
             inline fn formatMultiArrayListGet(self: *Instance, arr: anytype) !void {
-                try self.writeComptimeOnNewLine(.non_last, get_method);
+                try self.writeChildComptime(.non_last, get_method);
 
                 const backup_len = self.prefix.items.len;
                 var index: usize = 0;
@@ -341,26 +335,24 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                     if (index == self.settings.multi_array_list_get_limit)
                         return try self.writeIndexingLimitMessage(self.settings.multi_array_list_get_limit, arr.len);
                     if (index == arr.len - 1) {
-                        try self.printOnNewLine(.last, comptimeInColor(Color.green, "({d})"), .{index});
+                        try self.writeChild(.last, comptimeInColor(Color.green, "({d})"), .{index});
                         return try self.formatValueRecursiveIndented(.last, arr.get(index));
                     }
-                    try self.printOnNewLine(.non_last, comptimeInColor(Color.green, "({d})"), .{index});
+                    try self.writeChild(.non_last, comptimeInColor(Color.green, "({d})"), .{index});
                     try self.formatValueRecursiveIndented(.non_last, arr.get(index));
                 }
             }
 
             inline fn formatMultiArrayListSlice(self: *Instance, slice: anytype) !void {
-                {
-                    const arr = slice.toMultiArrayList();
-                    try self.writeComptimeOnNewLine(.non_last, to_multi_array_list_method);
-                    try self.writeTypeName(arr);
+                const arr = slice.toMultiArrayList();
+                try self.writeChildComptime(.non_last, to_multi_array_list_method);
+                try self.writeTypeName(arr);
 
-                    const backup_len = self.prefix.items.len;
-                    defer self.prefix.shrinkRetainingCapacity(backup_len);
-                    try self.prefix.appendSlice(indent_bar);
+                const backup_len = self.prefix.items.len;
+                defer self.prefix.shrinkRetainingCapacity(backup_len);
+                try self.prefix.appendSlice(indent_bar);
 
-                    try self.formatMultiArrayList(arr, @TypeOf(arr));
-                }
+                try self.formatMultiArrayList(arr, @TypeOf(arr));
 
                 try self.formatFieldValues(slice, @typeInfo(@TypeOf(slice)).Struct);
             }
@@ -371,7 +363,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
             }
 
             inline fn formatHashMapUnmanagedEntries(self: *Instance, map: anytype) !void {
-                try self.writeComptimeOnNewLine(.non_last, iterator_method);
+                try self.writeChildComptime(.non_last, iterator_method);
 
                 var count: usize = 0;
                 var it = map.iterator();
@@ -383,20 +375,20 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                     if (count > self.settings.hash_map_entry_limit)
                         return try self.writeIndexingLimitMessage(self.settings.hash_map_entry_limit, map.count());
                     if (count == map.count() - 1) {
-                        try self.writeComptimeOnNewLine(.last, next_method);
+                        try self.writeChildComptime(.last, next_method);
                         return try self.formatValueRecursiveIndented(.last, entry);
                     }
-                    try self.writeComptimeOnNewLine(.non_last, next_method);
+                    try self.writeChildComptime(.non_last, next_method);
                     try self.formatValueRecursiveIndented(.non_last, entry);
                 }
             }
 
-            inline fn printOnNewLine(self: *Instance, child_prefix: ChildPrefix, comptime format: []const u8, args: anytype) !void {
+            inline fn writeChild(self: *Instance, child_prefix: ChildPrefix, comptime fmt: []const u8, args: anytype) !void {
                 try self.writer.print("\n{s}" ++ child_prefix.bytes(), .{self.prefix.items});
-                try self.writer.print(format, args);
+                try self.writer.print(fmt, args);
             }
 
-            inline fn writeComptimeOnNewLine(self: *Instance, child_prefix: ChildPrefix, comptime bytes: []const u8) !void {
+            inline fn writeChildComptime(self: *Instance, child_prefix: ChildPrefix, comptime bytes: []const u8) !void {
                 try self.writer.print("\n{s}" ++ child_prefix.bytes() ++ bytes, .{self.prefix.items});
             }
 
