@@ -28,7 +28,10 @@
 var tree_formatter = @import("./src/tree_fmt.zig").defaultFormatter();
 
 pub fn main() !void {
-    try tree_formatter.formatValueWithId(.{ 1, 2.4, "hi" }, "some_anon_struct");
+    try tree_formatter.format(.{ 1, 2.4, "hi" }, .{
+        // customize settings here, all fields are optional
+        .name = "some_anon_struct",
+    });
 }
 ```
 - Output:
@@ -68,16 +71,17 @@ pub fn main() !void {
     var w = std.io.getStdOut().writer();
 
     // initialize TreeFormatter with allocator and writer
-    var tree_formatter = treeFormatter(allocator, w, .{
-        // you can find settings at @import("./src/tree_fmt.zig").TreeFormatterSettings;
-        // you can also leave it blank to use default settings
-    });
+    var tree_formatter = treeFormatter(allocator, w);
 
     // initialize your value
     var sentinel_array: [*:0]const u8 = "hello world";
 
     // call the method with writer and value
-    try tree_formatter.formatValueWithId(sentinel_array, "sentinel_array");
+    try tree_formatter.format(sentinel_array, .{
+        .name = "sentinel_array",
+        // you can find more settings at @import("./src/tree_fmt.zig").TreeFormatterSettings;
+        // you can also leave it blank to use default settings
+    });
 }
 ```
 
