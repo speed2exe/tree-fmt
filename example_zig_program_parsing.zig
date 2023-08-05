@@ -5,18 +5,18 @@ pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     const allocator = gpa.allocator();
     defer {
-        const leaked = gpa.deinit();
-        if (leaked) {
-            @panic("leaked memory!");
+        switch (gpa.deinit()) {
+            .ok => {},
+            .leak => std.log.err("memory leak detected", .{}),
         }
     }
 
     var w = std.io.getStdOut().writer();
-    var tree_formatter = treeFormatter(allocator, w, .{});
+    var tree_formatter = treeFormatter(allocator, w);
 
-    var ast = try std.zig.parse(allocator, zig_code);
+    var ast = try std.zig.Ast.parse(allocator, zig_code, .zig);
     defer ast.deinit(allocator);
-    try tree_formatter.formatValueWithId(ast.tokens, "ast");
+    try tree_formatter.format(ast.tokens, .{ .name = "ast" });
 }
 
 const zig_code =

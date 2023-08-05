@@ -1,4 +1,5 @@
 const std = @import("std");
+const reset = "\x1b[m";
 
 pub fn comptimeFmtInColor(
     comptime color: Color,
@@ -32,5 +33,3 @@ pub const Color = enum {
         };
     }
 };
-
-pub const reset = "\x1b[m";

@@ -5,17 +5,14 @@ pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     const allocator = gpa.allocator();
     defer {
-        const leaked = gpa.deinit();
-        if (leaked) {
-            @panic("leaked memory!");
+        switch (gpa.deinit()) {
+            .ok => {},
+            .leak => std.log.err("memory leak detected", .{}),
         }
     }
 
     var w = std.io.getStdOut().writer();
-    var tree_formatter = treeFormatter(allocator, w, .{
-        .array_elem_limit = 1,
-        .print_u8_chars = false,
-    });
+    var tree_formatter = treeFormatter(allocator, w);
 
     var array_list = std.ArrayList(u8).init(allocator);
     defer array_list.deinit();
@@ -25,8 +22,20 @@ pub fn main() !void {
         try array_list.append(i);
     }
 
-    try tree_formatter.formatValueWithId(array_list, "array");
-    try tree_formatter.formatValueWithId(std.mem.span(array_list.items[0..0]), "slice");
-    try tree_formatter.formatValueWithId(std.mem.span(array_list.items[0..1]), "slice");
-    try tree_formatter.formatValueWithId(std.mem.span(array_list.items[0..2]), "slice");
+    try tree_formatter.format(array_list, .{ .name = "array" });
+    try tree_formatter.format(array_list.items[0..0], .{
+        .name = "slice1",
+        .array_elem_limit = 1,
+        .print_u8_chars = false,
+    });
+    try tree_formatter.format(array_list.items[0..1], .{
+        .name = "slice2",
+        .array_elem_limit = 1,
+        .print_u8_chars = false,
+    });
+    try tree_formatter.format(array_list.items[0..2], .{
+        .name = "slice3",
+        .array_elem_limit = 1,
+        .print_u8_chars = false,
+    });
 }

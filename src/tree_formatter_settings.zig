@@ -1,4 +1,7 @@
 pub const TreeFormatterSettings = struct {
+    // name of the root node
+    name: []const u8 = ".",
+
     array_elem_limit: usize = 5,
     slice_elem_limit: usize = 5,
     vector_elem_limit: usize = 5,

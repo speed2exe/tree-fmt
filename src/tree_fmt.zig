@@ -7,7 +7,7 @@ pub const TreeFormatterSettings = @import("./tree_formatter_settings.zig").TreeF
 // Create a TreeFormatter with:
 // - default settings from TreeFormatterSettings
 // - std.heap.page_allocator as the allocator
-// - std.io.getStdOut().writer() as the writer
-pub fn defaultFormatter() TreeFormatter(@TypeOf(std.io.getStdOut().writer())) {
-    return treeFormatter(std.heap.page_allocator, std.io.getStdOut().writer(), .{});
+// - std.io.getStdErr().writer() as the writer
+pub fn defaultFormatter() TreeFormatter(@TypeOf(std.io.getStdErr().writer())) {
+    return treeFormatter(std.heap.page_allocator, std.io.getStdErr().writer());
 }

@@ -5,14 +5,14 @@ pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     const allocator = gpa.allocator();
     defer {
-        const leaked = gpa.deinit();
-        if (leaked) {
-            @panic("leaked memory!");
+        switch (gpa.deinit()) {
+            .ok => {},
+            .leak => std.log.err("memory leak detected", .{}),
         }
     }
 
     var w = std.io.getStdOut().writer();
-    var tree_formatter = treeFormatter(allocator, w, .{});
+    var tree_formatter = treeFormatter(allocator, w);
 
     var map = std.AutoHashMap(u8, u8).init(allocator);
     defer map.deinit();
@@ -22,5 +22,5 @@ pub fn main() !void {
         try map.put(i, i * 2);
     }
 
-    try tree_formatter.formatValueWithId(map, "map");
+    try tree_formatter.format(map, .{ .name = "map1" });
 }

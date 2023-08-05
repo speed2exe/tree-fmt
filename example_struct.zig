@@ -8,6 +8,7 @@ const Struct1 = struct {
     // k: type = u16,
     // field_comptime_float: comptime_float = 3.14,
     // field_comptime_int: comptime_int = 11,
+    // field_null: @TypeOf(null) = null,
     // field_fn: fn () void = functionOne,
 
     field_void: void = undefined,
@@ -26,8 +27,6 @@ const Struct1 = struct {
 
     // TODO: not working, need to fix
     // field_struct_recursive: LinkedNode,
-
-    field_null: @TypeOf(null) = null,
 
     field_opt_i32_value: ?i32 = 9,
     field_opt_i32_null: ?i32 = null,
@@ -98,14 +97,14 @@ pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     const allocator = gpa.allocator();
     defer {
-        const leaked = gpa.deinit();
-        if (leaked) {
-            @panic("leaked memory!");
+        switch (gpa.deinit()) {
+            .ok => {},
+            .leak => std.log.err("memory leak detected", .{}),
         }
     }
 
     var w = std.io.getStdOut().writer();
-    var tree_formatter = treeFormatter(allocator, w, .{});
+    var tree_formatter = treeFormatter(allocator, w);
     var struct1: Struct1 = .{};
-    try tree_formatter.formatValueWithId(struct1, "struct1");
+    try tree_formatter.format(struct1, .{ .name = "struct1" });
 }

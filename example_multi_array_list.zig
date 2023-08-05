@@ -5,17 +5,14 @@ pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     const allocator = gpa.allocator();
     defer {
-        const leaked = gpa.deinit();
-        if (leaked) {
-            @panic("leaked memory!");
+        switch (gpa.deinit()) {
+            .ok => {},
+            .leak => std.log.err("memory leak detected", .{}),
         }
     }
 
     var w = std.io.getStdOut().writer();
-    var tree_formatter = treeFormatter(allocator, w, .{
-        .multi_array_list_get_limit = 4,
-        .print_u8_chars = false,
-    });
+    var tree_formatter = treeFormatter(allocator, w);
 
     var multi_array_list: std.MultiArrayList(Person) = .{};
     defer multi_array_list.deinit(allocator);
@@ -28,7 +25,11 @@ pub fn main() !void {
         });
     }
 
-    try tree_formatter.formatValueWithId(multi_array_list, "multi_array_list");
+    try tree_formatter.format(multi_array_list, .{
+        .name = "multi_array_list1",
+        .multi_array_list_get_limit = 4,
+        .print_u8_chars = false,
+    });
 }
 
 const Person = struct {
