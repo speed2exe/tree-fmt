@@ -100,11 +100,11 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
 
                         // extra method formatting for some types
                         if (self.settings.format_multi_array_list and isMultiArrayList(arg_type)) {
-                            try self.formatMultiArrayList(arg, arg_type);
+                            try self.formatMultiArrayListMethods(arg, arg_type);
                         } else if (self.settings.format_multi_array_list and isMultiArrayListSlice(arg_type)) {
-                            try self.formatMultiArrayListSlice(arg);
+                            try self.formatMultiArrayListSliceMethods(arg);
                         } else if (self.settings.format_hash_map_unmanaged and isHashMapUnmanaged(arg_type)) {
-                            try self.formatHashMapUnmanaged(arg);
+                            try self.formatHashMapUnmanagedMethods(arg);
                         }
 
                         return try self.formatFieldValues(arg, s);
@@ -298,7 +298,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                 }
             }
 
-            inline fn formatMultiArrayList(self: *Instance, arr: anytype, comptime arr_type: type) !void {
+            inline fn formatMultiArrayListMethods(self: *Instance, arr: anytype, comptime arr_type: type) !void {
                 try self.formatMultiArrayListSliceItems(arr, arr_type);
                 try self.formatMultiArrayListGet(arr);
             }
@@ -346,23 +346,14 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                 }
             }
 
-            inline fn formatMultiArrayListSlice(self: *Instance, slice: anytype) !void {
+            inline fn formatMultiArrayListSliceMethods(self: *Instance, slice: anytype) !void {
+                // can reuse the methods from the multi array list
+                // contains the same logic anyway
                 const arr = slice.toMultiArrayList();
-                try self.writeChildComptime(.non_last, to_multi_array_list_method);
-                try self.writeTypeName(arr);
-
-                const backup_len = self.prefix.items.len;
-                defer self.prefix.shrinkRetainingCapacity(backup_len);
-                try self.prefix.appendSlice(indent_bar);
-
-                try self.formatMultiArrayList(arr, @TypeOf(arr));
+                try self.formatMultiArrayListMethods(arr, @TypeOf(arr));
             }
 
-            inline fn formatHashMapUnmanaged(self: *Instance, map: anytype) !void {
-                try self.formatHashMapUnmanagedEntries(map);
-            }
-
-            inline fn formatHashMapUnmanagedEntries(self: *Instance, map: anytype) !void {
+            inline fn formatHashMapUnmanagedMethods(self: *Instance, map: anytype) !void {
                 try self.writeChildComptime(.non_last, iterator_method);
 
                 var count: usize = 0;
