@@ -66,7 +66,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
             };
         }
 
-        pub fn format(self: Self, arg: anytype, settings: TreeFormatterSettings) anyerror!void {
+        pub fn format(self: Self, arg: anytype, settings: TreeFormatterSettings) !void {
             var prefix = std.ArrayList(u8).init(self.allocator);
             defer prefix.deinit();
             var counts_by_address = CountsByAddress.init(self.allocator);
@@ -78,7 +78,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                 .writer = self.writer,
             };
             try self.writer.print(comptimeInColor(Color.yellow, "{s}"), .{settings.name});
-            try instance.formatValueRecursive(arg);
+            try instance.formatRecursive(arg);
             try self.writer.print("\n", .{});
         }
 
@@ -88,8 +88,8 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
             settings: TreeFormatterSettings,
             writer: StdIoWriter,
 
-            fn formatValueRecursive(self: *Instance, arg: anytype) !void {
-                try self.writeTypeName(arg);
+            fn formatRecursive(self: *Instance, arg: anytype) anyerror!void { // TODO: remove anyerror
+                try self.formatTypeName(arg);
 
                 const arg_type = @TypeOf(arg);
                 switch (@typeInfo(arg_type)) {
@@ -198,7 +198,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                 }
             }
 
-            inline fn formatValueRecursiveIndented(self: *Instance, child_prefix: ChildPrefix, arg: anytype) !void {
+            fn formatValueRecursiveIndented(self: *Instance, child_prefix: ChildPrefix, arg: anytype) !void {
                 const backup_len = self.prefix.items.len;
                 defer self.prefix.shrinkRetainingCapacity(backup_len);
 
@@ -206,10 +206,10 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                     .non_last => try self.prefix.appendSlice(indent_bar),
                     .last => try self.prefix.appendSlice(indent_blank),
                 }
-                try self.formatValueRecursive(arg);
+                try self.formatRecursive(arg);
             }
 
-            inline fn writeIndexingLimitMessage(self: *Instance, limit: usize, len: usize) !void {
+            fn writeIndexingLimitMessage(self: *Instance, limit: usize, len: usize) !void {
                 try self.writeChild(
                     .last,
                     "..." ++ comptimeInColor(Color.bright_black, " (showed first {d} out of {d} items only)"),
@@ -217,7 +217,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                 );
             }
 
-            inline fn formatArrayValues(self: *Instance, array: anytype) !void {
+            fn formatArrayValues(self: *Instance, array: anytype) !void {
                 if (array.len > self.settings.array_elem_limit) {
                     inline for (array, 0..) |item, index| {
                         if (index >= self.settings.array_elem_limit) break;
@@ -226,13 +226,10 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                     return try self.writeIndexingLimitMessage(self.settings.array_elem_limit, array.len);
                 }
 
-                try self.formatArrayChildValues(.non_last, array[0 .. array.len - 1]);
+                inline for (array[0 .. array.len - 1], 0..) |item, index| {
+                    try self.formatIndexedValueComptime(.non_last, item, index);
+                }
                 try self.formatIndexedValueComptime(.last, array[array.len - 1], array.len - 1);
-            }
-
-            inline fn formatArrayChildValues(self: *Instance, child_prefix: ChildPrefix, args: anytype) !void {
-                inline for (args, 0..) |item, index|
-                    try self.formatIndexedValueComptime(child_prefix, item, index);
             }
 
             inline fn formatIndexedValueComptime(self: *Instance, child_prefix: ChildPrefix, item: anytype, comptime index: usize) !void {
@@ -240,7 +237,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                 try self.formatValueRecursiveIndented(child_prefix, item);
             }
 
-            inline fn formatVectorValues(self: *Instance, vector: anytype, vector_type: anytype) !void {
+            fn formatVectorValues(self: *Instance, vector: anytype, vector_type: anytype) !void {
                 if (vector_type.len > self.settings.vector_elem_limit) {
                     comptime var i: usize = 0;
                     inline while (i < vector_type.len) : (i += 1) {
@@ -251,17 +248,18 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                 }
 
                 comptime var i: usize = 0;
-                inline while (i < vector_type.len - 1) : (i += 1)
+                inline while (i < vector_type.len - 1) : (i += 1) {
                     try self.formatIndexedValueComptime(.non_last, vector[i], i);
+                }
                 try self.formatIndexedValueComptime(.last, vector[i], i);
             }
 
-            inline fn formatIndexedValue(self: *Instance, comptime child_prefix: ChildPrefix, item: anytype, index: usize) !void {
-                try self.writeChild(child_prefix, comptime comptimeInColor(Color.yellow, "[{d}]"), .{index});
+            fn formatIndexedValue(self: *Instance, comptime child_prefix: ChildPrefix, item: anytype, index: usize) !void {
+                try self.writeChild(child_prefix, comptimeInColor(Color.yellow, "[{d}]"), .{index});
                 try self.formatValueRecursiveIndented(child_prefix, item);
             }
 
-            inline fn formatSliceValues(self: *Instance, slice: anytype) !void {
+            fn formatSliceValues(self: *Instance, slice: anytype) !void {
                 if (slice.len > self.settings.slice_elem_limit) {
                     for (slice[0..self.settings.slice_elem_limit], 0..) |item, index|
                         try self.formatIndexedValue(.non_last, item, index);
@@ -274,7 +272,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                 try self.formatIndexedValue(.last, slice[last_index], last_index);
             }
 
-            inline fn formatFieldValues(self: *Instance, arg: anytype, comptime arg_type: anytype) !void {
+            fn formatFieldValues(self: *Instance, arg: anytype, arg_type: anytype) !void {
                 // Note:
                 // This is set so that unions can be printed for all its values
                 // This can be removed if we are able to determine the active union
@@ -288,7 +286,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                 }
             }
 
-            inline fn formatFieldValueAtIndex(self: *Instance, arg: anytype, arg_type: anytype, target_index: usize) !void {
+            fn formatFieldValueAtIndex(self: *Instance, arg: anytype, arg_type: anytype, target_index: usize) !void {
                 inline for (arg_type.fields, 0..) |field, index| {
                     if (index == target_index) {
                         try self.writeChildComptime(.last, comptimeInColor(Color.yellow, "." ++ field.name));
@@ -297,15 +295,15 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                 }
             }
 
-            inline fn formatMultiArrayListMethods(self: *Instance, arr: anytype, comptime arr_type: type) !void {
+            fn formatMultiArrayListMethods(self: *Instance, arr: anytype, comptime arr_type: type) !void {
                 try self.formatMultiArrayListSliceItems(arr, arr_type);
                 try self.formatMultiArrayListGet(arr);
             }
 
-            inline fn formatMultiArrayListSliceItems(self: *Instance, arr: anytype, comptime arr_type: type) !void {
+            fn formatMultiArrayListSliceItems(self: *Instance, arr: anytype, comptime arr_type: type) !void {
                 const slice = arr.slice();
                 try self.writeChildComptime(.non_last, slice_method);
-                try self.writeTypeName(slice);
+                try self.formatTypeName(slice);
 
                 const backup_len = self.prefix.items.len;
                 defer self.prefix.shrinkRetainingCapacity(backup_len);
@@ -325,7 +323,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                 }
             }
 
-            inline fn formatMultiArrayListGet(self: *Instance, arr: anytype) !void {
+            fn formatMultiArrayListGet(self: *Instance, arr: anytype) !void {
                 try self.writeChildComptime(.non_last, get_method);
 
                 const backup_len = self.prefix.items.len;
@@ -345,14 +343,14 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                 }
             }
 
-            inline fn formatMultiArrayListSliceMethods(self: *Instance, slice: anytype) !void {
+            fn formatMultiArrayListSliceMethods(self: *Instance, slice: anytype) !void {
                 // can reuse the methods from the multi array list
                 // contains the same logic anyway
                 const arr = slice.toMultiArrayList();
                 try self.formatMultiArrayListMethods(arr, @TypeOf(arr));
             }
 
-            inline fn formatHashMapUnmanagedMethods(self: *Instance, map: anytype) !void {
+            fn formatHashMapUnmanagedMethods(self: *Instance, map: anytype) !void {
                 try self.writeChildComptime(.non_last, iterator_method);
 
                 var count: usize = 0;
@@ -373,16 +371,16 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                 }
             }
 
-            inline fn writeChild(self: *Instance, child_prefix: ChildPrefix, comptime fmt: []const u8, args: anytype) !void {
+            fn writeChild(self: *Instance, comptime child_prefix: ChildPrefix, comptime fmt: []const u8, args: anytype) !void {
                 try self.writer.print("\n{s}" ++ child_prefix.bytes(), .{self.prefix.items});
                 try self.writer.print(fmt, args);
             }
 
-            inline fn writeChildComptime(self: *Instance, child_prefix: ChildPrefix, comptime bytes: []const u8) !void {
+            fn writeChildComptime(self: *Instance, comptime child_prefix: ChildPrefix, comptime bytes: []const u8) !void {
                 try self.writer.print("\n{s}" ++ child_prefix.bytes() ++ bytes, .{self.prefix.items});
             }
 
-            inline fn writeTypeName(self: *Instance, arg: anytype) !void {
+            fn formatTypeName(self: *Instance, arg: anytype) !void {
                 try self.writer.print("{s}{s}", .{
                     comptimeInColor(Color.bright_black, ": "),
                     comptimeInColor(Color.cyan, @typeName(@TypeOf(arg))),
@@ -392,7 +390,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
     };
 }
 
-inline fn isComptime(val: anytype) bool {
+fn isComptime(val: anytype) bool {
     return @typeInfo(@TypeOf(.{val})).Struct.fields[0].is_comptime;
 }
 
