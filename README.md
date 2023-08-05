@@ -16,7 +16,7 @@
 ![Screenshot](./images/screenshot.png)
 
 ## Usage
-- Zig Package Manager Example: `https://github.com/speed2exe/tree-fmt-example`
+- Zig Package Manager Example: https://github.com/speed2exe/tree-fmt-example
 
 ### Quick Setup
 - This is the easiest way if you want to save time.
