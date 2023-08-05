@@ -2,12 +2,6 @@
 - Pretty prints out Zig Values for your debugging needs.
 - This library is in continuous development, if you face any issue with formatting, kindly open an issue.
 
-## Important
-- `main` branch will be replaced by `zig-0.11.x` when Zig 0.11 is released
-- If you are already using zig version 0.11.x,
-  - You can use find the example to use tree formatter via package manager: https://github.com/speed2exe/tree-fmt-example
-  - API has also been updated: https://github.com/speed2exe/tree-fmt/tree/zig-0.11.x
-
 ## Objective
 - Provide a colored tree-like visual representation of a Zig value to aid in debugging.
 
