@@ -1,3 +1,64 @@
+# Tree Formattar for Zig
+- Pretty prints out Zig Values for your debugging needs.
+- This library is in continuous development, if you face any issue with formatting, kindly open an issue.
+
+## Objective
+- Provide a colored tree-like visual representation of a Zig value to aid in debugging.
+
+## Features
+- Colored output to distinguish between types and values
+- Indentation to show the structure of the value
+- Special foramtters for following types due to their complexity:
+  - `std.MultiArrayList`
+  - `std.HashMapUnmanaged`
+
+## Screenshot
+![Screenshot](./images/screenshot.png)
+
+## Usage
+- Package Manager Example: TODO
+
+### Quick Setup
+- This is the easiest way if you want to save time.
+- This example is in `example_default_tree_formatter.zig`
+
+```zig
+var tree_formatter = @import("./src/tree_fmt.zig").defaultFormatter();
+
+pub fn main() !void {
+    try tree_formatter.format(.{ 1, 2.4, "hi" }, .{
+        .name = "my_anon_struct",
+    });
+}
+```
+- Output:
+```
+some_anon_struct: tuple{comptime comptime_int = 1, comptime comptime_float = 2.4, comptime *const [2:0]u8 = "hi"}
+├─.0: comptime_int => 1
+├─.1: comptime_float => 2.4e+00
+└─.2: *const [2:0]u8 @21d169
+  └─.*: [2:0]u8 hi
+    ├─[0]: u8 => 104
+    └─[1]: u8 => 105
+```
+
+
+### Proper Setup
+- This is recommended, as it gives you more control over writer, allocator and settings.
+
+```zig
+const std = @import("std");
+
+// add imports here
+const treeFormatter = @import("./src/tree_fmt.zig").treeFormatter;
+
+pub fn main() !void {
+    // initialize your allocator
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
+    defer {
+        const leaked = gpa.deinit();
+        if (leaked) {
             @panic("leaked memory!");
         }
     }
@@ -7,17 +68,16 @@
     var w = std.io.getStdOut().writer();
 
     // initialize TreeFormatter with allocator and writer
-    var tree_formatter = treeFormatter(allocator, w, .{
-        // you can find settings at @import("./src/tree_fmt.zig").TreeFormatterSettings;
-        // you can also leave it blank to use default settings
-    });
+    var tree_formatter = treeFormatter(allocator, w);
 
     // initialize your value
     var sentinel_array: [*:0]const u8 = "hello world";
 
     // call the method with writer and value
-    try tree_formatter.format(sentinel_array, .{
-        .name = "sentinel_array"
+    try tree_formatter.formatValueWithId(sentinel_array, .{
+        // .name = "sentinel_array", <-- example setting
+        // you can find settings at @import("./src/tree_fmt.zig").TreeFormatterSettings;
+        // you can also leave it blank to use default settings
     });
 }
 ```
