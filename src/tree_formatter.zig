@@ -32,10 +32,9 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
         const ptr_repeat = comptimeInColor(Color.bright_black, " (Repeated)");
         const pointer_dereference = comptimeInColor(Color.yellow, ".*");
         const optional_unwrap = comptimeInColor(Color.yellow, ".?");
-        const to_multi_array_list_method = comptimeInColor(Color.green, ".toMultiArrayList()");
         const slice_method = comptimeInColor(Color.green, ".slice()");
-        const items_method = comptimeInColor(Color.green, ".items");
-        const get_method = comptimeInColor(Color.green, ".get");
+        const items_method = comptimeInColor(Color.green, ".items()");
+        const get_method = comptimeInColor(Color.green, ".get()");
         const iterator_method = comptimeInColor(Color.green, ".iterator()");
         const next_method = comptimeInColor(Color.green, ".next()");
         const ChildPrefix = enum {
