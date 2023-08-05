@@ -128,7 +128,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                     .Pointer => |p| {
                         switch (p.size) {
                             .One => {
-                                const addr: usize = @ptrToInt(arg);
+                                const addr: usize = @intFromPtr(arg);
                                 try self.writer.print(" " ++ address_fmt, .{addr});
 
                                 if (self.counts_by_address.getPtr(addr)) |counts_ptr| {
@@ -159,7 +159,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                                 try self.formatValueRecursiveIndented(.last, arg.*);
                             },
                             .Slice => {
-                                try self.writer.print(" " ++ address_fmt, .{@ptrToInt(arg.ptr)});
+                                try self.writer.print(" " ++ address_fmt, .{@intFromPtr(arg.ptr)});
                                 if (p.child == u8 and self.settings.print_u8_chars)
                                     try self.writer.print(" \"{s}\"", .{arg});
                                 if (arg.len == 0) {
@@ -169,7 +169,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                                 }
                             },
                             .Many, .C => {
-                                try self.writer.print(" " ++ address_fmt, .{@ptrToInt(arg)});
+                                try self.writer.print(" " ++ address_fmt, .{@intFromPtr(arg)});
                                 _ = p.sentinel orelse return;
                                 if (p.child == u8 and self.settings.print_u8_chars)
                                     try self.writer.print(" \"{s}\"", .{arg});
@@ -187,7 +187,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                         if (u.fields.len == 0)
                             return try self.writer.writeAll(empty);
                         if (u.tag_type) |_|
-                            return try self.formatFieldValueAtIndex(arg, u, @enumToInt(arg));
+                            return try self.formatFieldValueAtIndex(arg, u, @intFromEnum(arg));
                         try self.formatFieldValues(arg, u);
                     },
                     .ErrorUnion => {
@@ -195,8 +195,8 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                             return try self.writer.print(" {s} {any}", .{ arrow, err });
                         try self.formatValueRecursiveIndented(.last, value);
                     },
-                    .Enum => try self.writer.print(" {s} {} ({d})", .{ arrow, arg, @enumToInt(arg) }),
-                    .Fn => try self.writer.print(" " ++ address_fmt, .{@ptrToInt(&arg)}),
+                    .Enum => try self.writer.print(" {s} {} ({d})", .{ arrow, arg, @intFromEnum(arg) }),
+                    .Fn => try self.writer.print(" " ++ address_fmt, .{@intFromPtr(&arg)}),
                     else => try self.writer.print(" {s} {any}", .{ arrow, arg }),
                 }
             }
@@ -222,7 +222,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
 
             inline fn formatArrayValues(self: *Instance, array: anytype) !void {
                 if (array.len > self.settings.array_elem_limit) {
-                    inline for (array) |item, index| {
+                    inline for (array, 0..) |item, index| {
                         if (index >= self.settings.array_elem_limit) break;
                         try self.formatIndexedValueComptime(.non_last, item, index);
                     }
@@ -234,7 +234,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
             }
 
             inline fn formatArrayChildValues(self: *Instance, child_prefix: ChildPrefix, args: anytype) !void {
-                inline for (args) |item, index|
+                inline for (args, 0..) |item, index|
                     try self.formatIndexedValueComptime(child_prefix, item, index);
             }
 
@@ -266,13 +266,13 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
 
             inline fn formatSliceValues(self: *Instance, slice: anytype) !void {
                 if (slice.len > self.settings.slice_elem_limit) {
-                    for (slice[0..self.settings.slice_elem_limit]) |item, index|
+                    for (slice[0..self.settings.slice_elem_limit], 0..) |item, index|
                         try self.formatIndexedValue(.non_last, item, index);
                     return try self.writeIndexingLimitMessage(self.settings.slice_elem_limit, slice.len);
                 }
 
                 const last_index = slice.len - 1;
-                for (slice[0..last_index]) |item, index|
+                for (slice[0..last_index], 0..) |item, index|
                     try self.formatIndexedValue(.non_last, item, index);
                 try self.formatIndexedValue(.last, slice[last_index], last_index);
             }
@@ -284,7 +284,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                 // field during ReleaseSafe and Debug builds,
                 @setRuntimeSafety(false);
 
-                inline for (arg_type.fields) |field, index| {
+                inline for (arg_type.fields, 0..) |field, index| {
                     const child_prefix = if (index == arg_type.fields.len - 1) .last else .non_last;
                     try self.writeComptimeOnNewLine(child_prefix, comptimeInColor(Color.yellow, "." ++ field.name));
                     try self.formatValueRecursiveIndented(child_prefix, @field(arg, field.name));
@@ -292,7 +292,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
             }
 
             inline fn formatFieldValueAtIndex(self: *Instance, arg: anytype, arg_type: anytype, target_index: usize) !void {
-                inline for (arg_type.fields) |field, index| {
+                inline for (arg_type.fields, 0..) |field, index| {
                     if (index == target_index) {
                         try self.writeComptimeOnNewLine(.last, comptimeInColor(Color.yellow, "." ++ field.name));
                         return try self.formatValueRecursiveIndented(.last, @field(arg, field.name));
@@ -317,14 +317,14 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
 
                 try self.writeComptimeOnNewLine(.last, items_method);
                 const fields = @typeInfo(arr_type.Field).Enum.fields;
-                inline for (fields) |field, index| {
+                inline for (fields, 0..) |field, index| {
                     const backup_len2 = self.prefix.items.len;
                     defer self.prefix.shrinkRetainingCapacity(backup_len2);
                     try self.prefix.appendSlice(indent_blank);
 
                     const child_prefix = if (index == fields.len - 1) .last else .non_last;
                     try self.printOnNewLine(child_prefix, comptimeInColor(Color.green, "(.{s})"), .{field.name});
-                    const items = slice.items(@intToEnum(arr_type.Field, index));
+                    const items = slice.items(@as(arr_type.Field, @enumFromInt(index)));
                     try self.formatValueRecursiveIndented(child_prefix, items);
                 }
             }
