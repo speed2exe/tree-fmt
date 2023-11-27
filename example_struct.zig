@@ -103,8 +103,8 @@ pub fn main() !void {
         }
     }
 
-    var w = std.io.getStdOut().writer();
+    const w = std.io.getStdOut().writer();
     var tree_formatter = treeFormatter(allocator, w);
-    var struct1: Struct1 = .{};
+    const struct1: Struct1 = .{};
     try tree_formatter.format(struct1, .{ .name = "struct1" });
 }

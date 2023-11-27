@@ -2,7 +2,7 @@ const std = @import("std");
 const treeFormatter = @import("./src/tree_fmt.zig").treeFormatter;
 
 pub fn main() !void {
-    var w = std.io.getStdOut().writer();
+    const w = std.io.getStdOut().writer();
     var tree_formatter = treeFormatter(std.heap.page_allocator, w);
     try tree_formatter.format(.{ 1, 2, 3 }, .{
         .name = "foo",

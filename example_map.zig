@@ -11,7 +11,7 @@ pub fn main() !void {
         }
     }
 
-    var w = std.io.getStdOut().writer();
+    const w = std.io.getStdOut().writer();
     var tree_formatter = treeFormatter(allocator, w);
 
     var map = std.AutoHashMap(u8, u8).init(allocator);

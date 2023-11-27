@@ -11,10 +11,10 @@ pub fn main() !void {
         }
     }
 
-    var w = std.io.getStdOut().writer();
+    const w = std.io.getStdOut().writer();
     var tree_formatter = treeFormatter(allocator, w);
 
-    var sentinel_array: [*:0]const u8 = "hello world";
+    const sentinel_array: [*:0]const u8 = "hello world";
 
     try tree_formatter.format(sentinel_array, .{ .name = "sentinel_array" });
 }

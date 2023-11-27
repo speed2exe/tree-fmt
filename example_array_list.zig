@@ -11,7 +11,7 @@ pub fn main() !void {
         }
     }
 
-    var w = std.io.getStdOut().writer();
+    const w = std.io.getStdOut().writer();
     var tree_formatter = treeFormatter(allocator, w);
 
     var array_list = std.ArrayList(u8).init(allocator);
