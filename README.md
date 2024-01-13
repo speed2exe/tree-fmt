@@ -2,6 +2,10 @@
 - Pretty prints out Zig Values for your debugging needs.
 - This library is in continuous development, if you face any issue with formatting, kindly open an issue.
 
+## Versioning
+- see tags
+- current version: `v0.12.0-dev.2150+63de8a598`
+
 ## Objective
 - Provide a colored tree-like visual representation of a Zig value to aid in debugging.
 
