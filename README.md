@@ -125,8 +125,11 @@ sentinel_array: [*:0]const u8 @20a71e "hello world"
 └─... (showed first 10 out of 11 items only)
 ```
 
-- You can find other examples in the root directory. To run the examples, use
-  `zig run examples_<example_name>.zig`
+- You can find other examples in the `examples` directory. To run specific example(s):
+```bash
+    zig build test -Dtest-filter="name of test"
+    # e.g. zig build test -Dtest-filter="anon struct 1"
+```
 
 ## Example
 - `std.ArrayList(u8)`

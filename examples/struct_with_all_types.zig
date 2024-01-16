@@ -1,5 +1,6 @@
 const std = @import("std");
-const treeFormatter = @import("./src/tree_fmt.zig").treeFormatter;
+const utils = @import("./utils.zig");
+const formatter = utils.formatter;
 
 var i32_value: i32 = 42;
 
@@ -93,18 +94,7 @@ const TaggedUnion1 = union(enum) {
 
 fn functionOne() void {}
 
-pub fn main() !void {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    const allocator = gpa.allocator();
-    defer {
-        switch (gpa.deinit()) {
-            .ok => {},
-            .leak => std.log.err("memory leak detected", .{}),
-        }
-    }
-
-    const w = std.io.getStdOut().writer();
-    var tree_formatter = treeFormatter(allocator, w);
+test "struct with all types" {
     const struct1: Struct1 = .{};
-    try tree_formatter.format(struct1, .{ .name = "struct1" });
+    try formatter.format(struct1, .{ .name = "struct1" });
 }
