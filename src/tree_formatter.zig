@@ -193,7 +193,9 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                         try self.formatValueRecursiveIndented(.last, value);
                     },
                     .Enum => try self.writer.print(" {s} {} ({d})", .{ arrow, arg, @intFromEnum(arg) }),
-                    .Fn => try self.writer.print(" " ++ address_fmt, .{@intFromPtr(&arg)}),
+                    .Fn => {
+                        // cant print any values for fn types
+                    },
                     else => try self.writer.print(" {s} {any}", .{ arrow, arg }),
                 }
             }

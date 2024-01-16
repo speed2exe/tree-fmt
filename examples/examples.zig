@@ -162,3 +162,26 @@ test "zig program" {
     defer ast.deinit(std.testing.allocator);
     try formatter.format(ast.tokens, .{ .name = "ast" });
 }
+
+fn begin(args: anytype) !void {
+    _ = args;
+    std.debug.print("begin\n", .{});
+}
+test "cli parsing declaration" {
+    const decl = .{
+        .flags = &.{
+            .{
+                .short = "h",
+                .long = "help",
+                .description = "Prints help information",
+                .type = bool,
+                .default_value = false,
+            },
+        },
+        .subs = &.{
+            .{},
+        },
+        .exec = begin,
+    };
+    try formatter.format(decl, .{ .name = "cli decl" });
+}
