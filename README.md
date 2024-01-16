@@ -1,6 +1,6 @@
 # Tree Formattar for Zig
 - Pretty prints out Zig Values for your debugging needs.
-- This library is in continuous development, if you face any issue with formatting, kindly open an issue.
+- If you faces any issue with formatting, kindly open an issue.
 
 ## Versioning
 - see tags
@@ -12,7 +12,7 @@
 ## Features
 - Colored output to distinguish between types and values
 - Indentation to show the structure of the value
-- Special foramtters for following types due to their complexity:
+- Special formatters for following types, do file a PR or FR if you think there are more types that can support special formatting:
   - `std.MultiArrayList`
   - `std.HashMapUnmanaged`
 
@@ -21,6 +21,29 @@
 
 ## Usage
 - Zig Package Manager Example: https://github.com/speed2exe/tree-fmt-example
+- `zig.build.zon`
+```zon
+.{
+    .name = "your_package_name",
+    .version = "0.0.1",
+    .dependencies = .{
+        .tree_fmt = .{
+            .url = "https://github.com/speed2exe/tree-fmt/archive/8e35205734e6dea7c0fd66c8a9f645d87558f68c.tar.gz",
+            .hash = "12201dceb9a9c2c9a6fc83105a7f408132b9ab69173b266e7df2af2c1dd6f814cd51",
+        },
+    },
+    .paths = .{ "" },
+}
+```
+- `build.zig`
+```zig
+pub fn build(b: *std.Build) void {
+    // ...
+    const dep = b.dependency("tree_fmt", .{});
+    const tree_fmt = dep.module("tree-fmt");
+    your_program.root_module.addImport("tree-fmt", tree_fmt);
+}
+```
 
 ### Quick Setup
 - This is the easiest way if you want to save time.
