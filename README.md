@@ -50,7 +50,7 @@ pub fn build(b: *std.Build) void {
 - This example is in `example_default_tree_formatter.zig`
 
 ```zig
-var tree_formatter = @import("./src/tree_fmt.zig").defaultFormatter();
+var tree_formatter = @import("tree-fmt").defaultFormatter();
 
 pub fn main() !void {
     try tree_formatter.format(.{ 1, 2.4, "hi" }, .{
@@ -77,7 +77,7 @@ some_anon_struct: tuple{comptime comptime_int = 1, comptime comptime_float = 2.4
 const std = @import("std");
 
 // add imports here
-const treeFormatter = @import("./src/tree_fmt.zig").treeFormatter;
+const treeFormatter = @import("tree-fmt").treeFormatter;
 
 pub fn main() !void {
     // initialize your allocator
