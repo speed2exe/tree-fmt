@@ -284,7 +284,6 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                     } else {
                         try self.formatIndexedValueComptime(.non_last, item, index);
                     }
-                    try self.formatIndexedValue(.non_last, item, index);
                 }
             }
 
