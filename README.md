@@ -19,6 +19,12 @@
 ## Screenshot
 ![Screenshot](./images/screenshot.png)
 
+## Example
+- You can run on of the examples in the `examples` by executing the following command:
+```bash
+zig build test -Dtest-filter="anon struct 1"
+```
+
 ## Usage
 - Zig Package Manager Example: https://github.com/speed2exe/tree-fmt-example
 - `zig.build.zon`

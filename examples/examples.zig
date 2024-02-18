@@ -6,10 +6,30 @@ test {
     std.testing.refAllDeclsRecursive(@import("./struct_with_all_types.zig"));
 }
 
+test "runtime and comptime slice" {
+    const ct_slice1 = @typeInfo(struct { f1: u16, f2: u8, f3: u8, f4: u8 }).Struct.fields;
+    const ct_slice2 = @typeInfo(struct { f1: u16, f2: u8, f3: u8, f4: u8, f5: u8 }).Struct.fields;
+    const ct_slice3 = @typeInfo(struct { f1: u16, f2: u8, f3: u8, f4: u8, f5: u8, f6: u8 }).Struct.fields;
+    const ct_slice4 = @typeInfo(struct {}).Struct.fields;
+    try formatter.format(ct_slice1, .{ .name = "ct_slice1" });
+    try formatter.format(ct_slice2, .{ .name = "ct_slice2" });
+    try formatter.format(ct_slice3, .{ .name = "ct_slice3" });
+    try formatter.format(ct_slice4, .{ .name = "ct_slice4" });
+
+    // runtime slice
+    const arr1 = [_]u8{ 49, 50, 51, 52, 53, 54 };
+    const arr2 = [_]u8{ 49, 50, 51, 52, 53 };
+    const arr3 = [_]u8{ 49, 50, 51, 52 };
+    const arr4 = [_]u8{};
+    try formatter.format(arr1, .{ .name = "rt_slice1" });
+    try formatter.format(arr2, .{ .name = "rt_slice2" });
+    try formatter.format(arr3, .{ .name = "rt_slice3" });
+    try formatter.format(arr4, .{ .name = "rt_slice4" });
+}
+
 test "anon struct 1" {
-    try formatter.format(.{ 1, 2, 3 }, .{
-        .name = "foo",
-    });
+    try formatter.format(.{ 1, 2, 3 }, .{ .name = "foo" });
+    // try formatter.format(@typeInfo(@TypeOf(.{ 1, 2, 3 })), .{ .name = "foo" });
 }
 
 test "anon struct 2" {
