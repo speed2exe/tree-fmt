@@ -12,6 +12,10 @@ pub const TreeFormatterSettings = struct {
     /// affects Arrays, Slice, Vector
     print_u8_chars: bool = true,
 
+    /// disables printing of []u8
+    /// in lists (Array, Slice, Vector)
+    ignore_u8_in_lists: bool = false,
+
     /// determines maximum repeat count for a unique pointer
     ptr_repeat_limit: usize = 1,
 

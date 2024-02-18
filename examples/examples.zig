@@ -52,16 +52,26 @@ test "anon struct 2" {
     try formatter.format(s, .{});
 }
 
-test "array" {
+test "array 123" {
     var array: [128]u8 = undefined;
     for (&array, 0..) |*e, i| {
         e.* = @intCast(i);
     }
-
     try formatter.format(array, .{
         .name = "array",
         .array_elem_limit = 5,
         .print_u8_chars = false,
+    });
+    try formatter.format(@typeInfo(@TypeOf(array)), .{
+        .name = "array type info",
+    });
+
+    const comp_array = [_]u8{ 1, 2, 3, 4, 5, 6 };
+    try formatter.format(comp_array, .{
+        .name = "comptime array",
+    });
+    try formatter.format(@typeInfo(@TypeOf(comp_array)), .{
+        .name = "array type info",
     });
 }
 
@@ -74,7 +84,8 @@ test "map" {
         try map.put(i, i * 2);
     }
 
-    try formatter.format(map, .{ .name = "map1" });
+    try formatter.format(map, .{ .name = "map" });
+    try formatter.format(@typeInfo(@TypeOf(map)), .{ .name = "map typeInfo" });
 }
 
 test "array list slice" {
@@ -117,6 +128,9 @@ test "array list" {
         .array_elem_limit = 5,
         .print_u8_chars = false,
     });
+    try formatter.format(@typeInfo(@TypeOf(array_list)), .{
+        .name = "arraylist type info",
+    });
 }
 
 test "error union" {
@@ -130,11 +144,13 @@ test "error union" {
 
     try formatter.format(my_struct_error, .{ .name = "my_struct_error" });
     try formatter.format(my_struct_value, .{ .name = "my_struct_value" });
+    try formatter.format(@typeInfo(anyerror!MyStruct), .{ .name = "err union type info" });
 }
 
 test "sentinel ptr" {
     const sentinel_array: [*:0]const u8 = "hello world";
     try formatter.format(sentinel_array, .{ .name = "sentinel_array" });
+    try formatter.format(@typeInfo([*:0]const u8), .{ .name = "sentinel ptr type info" });
 }
 
 const LinkedNode = struct {
@@ -149,6 +165,9 @@ test "recursive struct" {
     try formatter.format(n1, .{
         .name = "n1",
         .ptr_repeat_limit = 2,
+    });
+    try formatter.format(@typeInfo(?*LinkedNode), .{
+        .name = "optional ptr type info",
     });
 }
 
@@ -178,6 +197,10 @@ test "multi array list" {
         .multi_array_list_get_limit = 4,
         .print_u8_chars = false,
     });
+
+    try formatter.format(@typeInfo(std.MultiArrayList(Person)), .{
+        .name = "multi_array_list type info",
+    });
 }
 
 test "zig program" {
@@ -191,27 +214,23 @@ test "zig program" {
     var ast = try std.zig.Ast.parse(std.testing.allocator, zig_code, .zig);
     defer ast.deinit(std.testing.allocator);
     try formatter.format(ast.tokens, .{ .name = "ast" });
+    try formatter.format(@typeInfo(@TypeOf(ast.tokens)), .{ .name = "ast type info" });
 }
 
-fn begin(args: anytype) !void {
-    _ = args;
-    std.debug.print("begin\n", .{});
-}
-test "cli parsing declaration" {
-    const decl = .{
-        .flags = &.{
-            .{
-                .short = "h",
-                .long = "help",
-                .description = "Prints help information",
-                .type = bool,
-                .default_value = false,
-            },
-        },
-        .subs = &.{
-            .{},
-        },
-        .exec = begin,
-    };
-    try formatter.format(decl, .{ .name = "cli decl" });
+test "std" {
+    try formatter.format(@typeInfo(std), .{
+        .name = "std type info",
+        .slice_elem_limit = 1000,
+        .ignore_u8_in_lists = true,
+    });
+    try formatter.format(@typeInfo(std.net), .{
+        .name = "std type info",
+        .slice_elem_limit = 1000,
+        .ignore_u8_in_lists = true,
+    });
+    try formatter.format(@typeInfo(std.net.Stream), .{
+        .name = "std type info",
+        .slice_elem_limit = 1000,
+        .ignore_u8_in_lists = true,
+    });
 }

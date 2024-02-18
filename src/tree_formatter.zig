@@ -110,6 +110,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                     .Array => |a| {
                         if (a.child == u8 and self.settings.print_u8_chars) {
                             try self.writer.print(" \"{s}\"", .{arg});
+                            if (self.settings.ignore_u8_in_lists) return;
                         }
                         if (a.len == 0) return try self.writer.writeAll(empty);
                         return try self.formatArrayValues(arg);
@@ -117,6 +118,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                     .Vector => |v| {
                         if (v.child == u8 and self.settings.print_u8_chars) {
                             try self.writer.print(" \"{s}\"", .{arg});
+                            if (self.settings.ignore_u8_in_lists) return;
                         }
                         if (v.len == 0) return try self.writer.writeAll(empty);
                         return try self.formatVectorValues(arg, v);
@@ -159,8 +161,10 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                                 if (!isComptime(arg)) {
                                     try self.writer.print(" " ++ address_fmt, .{@intFromPtr(arg.ptr)});
                                 }
-                                if (p.child == u8 and self.settings.print_u8_chars)
+                                if (p.child == u8 and self.settings.print_u8_chars) {
                                     try self.writer.print(" \"{s}\"", .{arg});
+                                    if (self.settings.ignore_u8_in_lists) return;
+                                }
                                 if (arg.len == 0) {
                                     try self.writer.writeAll(empty);
                                 } else {
@@ -170,8 +174,10 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                             .Many, .C => {
                                 try self.writer.print(" " ++ address_fmt, .{@intFromPtr(arg)});
                                 _ = p.sentinel orelse return;
-                                if (p.child == u8 and self.settings.print_u8_chars)
+                                if (p.child == u8 and self.settings.print_u8_chars) {
                                     try self.writer.print(" \"{s}\"", .{arg});
+                                    if (self.settings.ignore_u8_in_lists) return;
+                                }
                                 try self.formatSliceValues(std.mem.span(arg));
                             },
                         }
@@ -225,6 +231,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
             }
 
             fn formatArrayValues(self: *Instance, array: anytype) !void {
+                // std.debug.print("array len: {d}\n", .{array.len});
                 if (self.settings.array_elem_limit == 0) {
                     return try self.writeIndexingLimitMessage(self.settings.array_elem_limit, array.len);
                 }
