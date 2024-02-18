@@ -187,7 +187,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                     .Union => |u| {
                         if (u.fields.len == 0) return try self.writer.writeAll(empty);
                         if (u.tag_type) |_| {
-                            return try self.formatFieldValueAtIndex(arg, u, @intFromEnum(arg));
+                            return try self.formatTaggedUnion(arg, u, @intFromEnum(arg));
                         }
                         try self.formatFieldValues(arg, u);
                     },
@@ -324,7 +324,17 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                 }
             }
 
-            fn formatFieldValueAtIndex(self: *Instance, arg: anytype, arg_type: anytype, target_index: usize) !void {
+            fn formatTaggedUnionComptime(self: *Instance, arg: anytype) !void {
+                const tag_name = @tagName(arg);
+                try self.writeChildComptime(.last, comptimeInColor(Color.yellow, "." ++ tag_name));
+                return try self.formatValueRecursiveIndented(.last, @field(arg, tag_name));
+            }
+
+            fn formatTaggedUnion(self: *Instance, arg: anytype, arg_type: anytype, target_index: usize) !void {
+                if (isComptime(arg)) {
+                    return try self.formatTaggedUnionComptime(arg);
+                }
+
                 inline for (arg_type.fields, 0..) |field, index| {
                     if (index == target_index) {
                         try self.writeChildComptime(.last, comptimeInColor(Color.yellow, "." ++ field.name));

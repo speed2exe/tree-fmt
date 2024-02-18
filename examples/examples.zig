@@ -27,9 +27,19 @@ test "runtime and comptime slice" {
     try formatter.format(arr4, .{ .name = "rt_slice4" });
 }
 
+test "tagged union" {
+    const MyUnion = union(enum) {
+        a: u8,
+        b: u16,
+        c: u32,
+    };
+    const my_union: MyUnion = .{ .b = 123 };
+    try formatter.format(my_union, .{ .name = "my_union" });
+}
+
 test "anon struct 1" {
     try formatter.format(.{ 1, 2, 3 }, .{ .name = "foo" });
-    // try formatter.format(@typeInfo(@TypeOf(.{ 1, 2, 3 })), .{ .name = "foo" });
+    try formatter.format(@typeInfo(@TypeOf(.{ 1, 2, 3 })), .{ .name = "foo" });
 }
 
 test "anon struct 2" {
