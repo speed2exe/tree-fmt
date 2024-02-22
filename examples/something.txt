@@ -1,0 +1,23 @@
+html {
+  head {
+    title = "Hello, World!"
+  }
+  body {
+    div {
+      class = "container"
+      style = "background-color: #f0f0f0; padding: 20px; margin: 20px;"
+      h1 {
+        "Hello, World!"
+      }
+
+    }
+    div {
+      $some_variable
+    }
+    # comment
+    script {
+      $./my_script.js(k = 1, $some_var)         # absolute path
+      $/path/to/my_script.js  # relative path
+    }
+  }
+};

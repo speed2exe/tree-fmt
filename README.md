@@ -3,8 +3,8 @@
 - If you faces any issue with formatting, kindly open an issue.
 
 ## Versioning
-- see tags
-- current version: `v0.12.0-dev.2150+63de8a598`
+- Current `main` branch tracks zig latest version
+- If you need a stable version, see release tags
 
 ## Objective
 - Provide a colored tree-like visual representation of a Zig value to aid in debugging.
@@ -12,7 +12,7 @@
 ## Features
 - Colored output to distinguish between types and values
 - Indentation to show the structure of the value
-- Special formatters for following types, do file a PR or FR if you think there are more types that can support special formatting:
+- Special formatters for following types (Do file a PR or FR if you think there are more types that can require special formatting)
   - `std.MultiArrayList`
   - `std.HashMapUnmanaged`
 
@@ -24,6 +24,7 @@
 ```bash
 zig build test -Dtest-filter="anon struct 1"
 ```
+- You might need to require to remove `zig-cache` to run it again without changes.
 
 ## Usage
 - Zig Package Manager Example: https://github.com/speed2exe/tree-fmt-example
@@ -52,15 +53,16 @@ pub fn build(b: *std.Build) void {
 ```
 
 ### Quick Setup
-- This is the easiest way if you want to save time.
+- Fastest and easiest way to if you want to save time and effort.
 - This example is in `example_default_tree_formatter.zig`
 
 ```zig
 var tree_formatter = @import("tree-fmt").defaultFormatter();
 
 pub fn main() !void {
-    try tree_formatter.format(.{ 1, 2.4, "hi" }, .{
-        .name = "my_anon_struct",
+    const my_struct = .{ 1, 2.4, "hi" };
+    try tree_formatter.format(my_struct, .{
+        .name = "my_struct", // (optional) just an identifier to the root of the tree
     });
 }
 ```
