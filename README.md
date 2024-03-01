@@ -35,7 +35,9 @@ zig build test -Dtest-filter="anon struct 1"
     .version = "0.0.1",
     .dependencies = .{
         .tree_fmt = .{
-            .url = "https://github.com/speed2exe/tree-fmt/archive/8e35205734e6dea7c0fd66c8a9f645d87558f68c.tar.gz",
+            // c6398b225f15cdbe35b3951920f634ffd1c65c12 is just commit hash
+            .url = "https://github.com/speed2exe/tree-fmt/archive/c6398b225f15cdbe35b3951920f634ffd1c65c12.tar.gz",
+            // just do `zig build`, get the error code and replace with expected hash
             .hash = "12201dceb9a9c2c9a6fc83105a7f408132b9ab69173b266e7df2af2c1dd6f814cd51",
         },
     },
