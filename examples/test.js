@@ -1,4 +1,0 @@
-
-var =  oulhpw
-oulphwoup
-lohpw
