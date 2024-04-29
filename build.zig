@@ -6,14 +6,14 @@ pub fn build(b: *std.Build) void {
     });
 
     // -Dtest-filter="..."
-    const test_filter = b.option([]const u8, "test-filter", "Filter for tests to run");
+    const test_filter = b.option([]const []const u8, "test-filter", "Filter for tests to run");
 
     // zig build test
     const examples = b.addTest(.{
         .root_source_file = .{ .path = "./examples/examples.zig" },
     });
     // zig build test -Dtest-filter=...
-    if (test_filter) |t| examples.filters = &.{t};
+    if (test_filter) |t| examples.filters = t;
 
     const run_examples = b.addRunArtifact(examples);
     const run_examples_step = b.step("test", "Run examples");
