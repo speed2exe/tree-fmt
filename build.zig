@@ -5,12 +5,16 @@ pub fn build(b: *std.Build) void {
         .root_source_file = .{ .path = "src/tree_fmt.zig" },
     });
 
+    // -Dtest-filter="..."
+    const test_filter = b.option([]const u8, "test-filter", "Filter for tests to run");
+
     // zig build test
     const examples = b.addTest(.{
         .root_source_file = .{ .path = "./examples/examples.zig" },
     });
     // zig build test -Dtest-filter=...
-    examples.filter = b.option([]const u8, "test-filter", "Filter for tests to run");
+    if (test_filter) |t| examples.filters = &.{t};
+
     const run_examples = b.addRunArtifact(examples);
     const run_examples_step = b.step("test", "Run examples");
     run_examples_step.dependOn(&run_examples.step);
