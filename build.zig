@@ -2,7 +2,7 @@ const std = @import("std");
 
 pub fn build(b: *std.Build) void {
     const tree_fmt = b.addModule("tree-fmt", .{
-        .root_source_file = .{ .cwd_relative = "src/tree_fmt.zig" },
+        .root_source_file = .{ .path = "./src/tree_fmt.zig" },
     });
 
     // -Dtest-filter="..."
@@ -10,7 +10,7 @@ pub fn build(b: *std.Build) void {
 
     // zig build test
     const examples = b.addTest(.{
-        .root_source_file = .{ .cwd_relative = "./examples/examples.zig" },
+        .root_source_file = .{ .path = "./examples/examples.zig" },
     });
     // zig build test -Dtest-filter=...
     if (test_filter) |t| examples.filters = t;
