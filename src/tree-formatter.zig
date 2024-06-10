@@ -1,9 +1,9 @@
 const std = @import("std");
 const builtin = std.builtin;
 
-const TreeFormatterSettings = @import("./tree_fmt.zig").TreeFormatterSettings;
+const TreeFormatterSettings = @import("./tree-fmt.zig").TreeFormatterSettings;
 
-const ansi_esc_code = @import("./ansi_esc_code.zig");
+const ansi_esc_code = @import("./ansi-esc-code.zig");
 const Color = ansi_esc_code.Color;
 const comptimeFmtInColor = ansi_esc_code.comptimeFmtInColor;
 const comptimeInColor = ansi_esc_code.comptimeInColor;

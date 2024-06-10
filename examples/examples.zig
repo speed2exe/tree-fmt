@@ -1,6 +1,6 @@
 const std = @import("std");
 const utils = @import("./utils.zig");
-const formatter = utils.formatter;
+const formatter = @import("tree-fmt").defaultFormatter();
 
 test {
     std.testing.refAllDeclsRecursive(@import("./struct_with_all_types.zig"));

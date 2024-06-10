@@ -2,7 +2,7 @@ const std = @import("std");
 
 pub fn build(b: *std.Build) void {
     const tree_fmt = b.addModule("tree-fmt", .{
-        .root_source_file = b.path("./src/tree_fmt.zig"),
+        .root_source_file = b.path("./src/tree-fmt.zig"),
     });
 
     // -Dtest-filter="..."
