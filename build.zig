@@ -20,3 +20,7 @@ pub fn build(b: *std.Build) void {
     run_examples_step.dependOn(&run_examples.step);
     examples.root_module.addImport("tree-fmt", tree_fmt);
 }
+
+pub fn formatBuild(b: *std.Build) void {
+    @import("./src/tree-fmt.zig").defaultFormatter().format(b, "Build");
+}
