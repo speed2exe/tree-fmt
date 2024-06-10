@@ -1,6 +1,6 @@
 const std = @import("std");
 
-pub fn build(b: *std.Build) void {
+pub fn build(b: *std.Build) !void {
     const tree_fmt = b.addModule("tree-fmt", .{
         .root_source_file = b.path("./src/tree-fmt.zig"),
     });
@@ -21,6 +21,11 @@ pub fn build(b: *std.Build) void {
     examples.root_module.addImport("tree-fmt", tree_fmt);
 }
 
-pub fn formatBuild(b: *std.Build) void {
-    @import("./src/tree-fmt.zig").defaultFormatter().format(b, "Build");
+pub fn formatBuild(b: *std.Build) !void {
+    try @import("./src/tree-fmt.zig").defaultFormatter().format(b, .{});
+}
+
+fn testfn1(b: *std.Build) void {
+    _ = b;
+    std.debug.print("testfn1\n", .{});
 }
