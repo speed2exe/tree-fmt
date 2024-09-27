@@ -93,7 +93,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
 
                 const arg_type = @TypeOf(arg);
                 switch (@typeInfo(arg_type)) {
-                    .Struct => |s| {
+                    .@"struct" => |s| {
                         if (s.fields.len == 0) return try self.writer.writeAll(empty);
 
                         // extra method formatting for some types
@@ -107,7 +107,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
 
                         return try self.formatFieldValues(arg, s);
                     },
-                    .Array => |a| {
+                    .array => |a| {
                         if (a.child == u8 and self.settings.print_u8_chars) {
                             try self.writer.print(" \"{s}\"", .{arg});
                             if (self.settings.ignore_u8_in_lists) return;
@@ -115,7 +115,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                         if (a.len == 0) return try self.writer.writeAll(empty);
                         return try self.formatArrayValues(arg);
                     },
-                    .Vector => |v| {
+                    .vector => |v| {
                         if (v.child == u8 and self.settings.print_u8_chars) {
                             try self.writer.print(" \"{s}\"", .{arg});
                             if (self.settings.ignore_u8_in_lists) return;
@@ -123,7 +123,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                         if (v.len == 0) return try self.writer.writeAll(empty);
                         return try self.formatVectorValues(arg, v);
                     },
-                    .Pointer => |p| {
+                    .pointer => |p| {
                         // TODO: detect invalid pointers and print them as such
                         switch (p.size) {
                             .One => {
@@ -144,12 +144,12 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                                 if (p.child == anyopaque) return;
                                 const child_type_info = @typeInfo(p.child);
                                 switch (child_type_info) {
-                                    .Fn => return,
+                                    .@"fn" => return,
                                     else => {},
                                 }
                                 if (!isComptime(arg)) {
                                     switch (child_type_info) {
-                                        .Opaque => return,
+                                        .@"opaque" => return,
                                         else => {},
                                     }
                                 }
@@ -182,7 +182,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                             },
                         }
                     },
-                    .Optional => {
+                    .optional => {
                         if (arg) |value| {
                             try self.writeChildComptime(.last, optional_unwrap);
                             try self.formatValueRecursiveIndented(.last, value);
@@ -190,21 +190,21 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                             try self.writer.print(" {s} null", .{arrow});
                         }
                     },
-                    .Union => |u| {
+                    .@"union" => |u| {
                         if (u.fields.len == 0) return try self.writer.writeAll(empty);
                         if (u.tag_type) |_| {
                             return try self.formatTaggedUnion(arg, u, @intFromEnum(arg));
                         }
                         try self.formatFieldValues(arg, u);
                     },
-                    .ErrorUnion => {
+                    .error_union => {
                         const value = arg catch |err| {
                             return try self.writer.print(" {s} {any}", .{ arrow, err });
                         };
                         try self.formatValueRecursiveIndented(.last, value);
                     },
-                    .Enum => try self.writer.print(" {s} {} ({d})", .{ arrow, arg, @intFromEnum(arg) }),
-                    .Fn => {
+                    .@"enum" => try self.writer.print(" {s} {} ({d})", .{ arrow, arg, @intFromEnum(arg) }),
+                    .@"fn" => {
                         // cant print any values for fn types
                     },
                     else => try self.writer.print(" {s} {any}", .{ arrow, arg }),
@@ -365,7 +365,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                 try self.prefix.appendSlice(indent_bar);
 
                 try self.writeChildComptime(.last, items_method);
-                const fields = @typeInfo(arr_type.Field).Enum.fields;
+                const fields = @typeInfo(arr_type.Field).@"enum".fields;
                 inline for (fields, 0..) |field, index| {
                     const backup_len2 = self.prefix.items.len;
                     defer self.prefix.shrinkRetainingCapacity(backup_len2);
@@ -448,7 +448,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
 }
 
 inline fn isComptime(val: anytype) bool {
-    return @typeInfo(@TypeOf(.{val})).Struct.fields[0].is_comptime;
+    return @typeInfo(@TypeOf(.{val})).@"struct".fields[0].is_comptime;
 }
 
 inline fn isMultiArrayList(comptime T: type) bool {

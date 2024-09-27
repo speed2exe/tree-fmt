@@ -7,10 +7,10 @@ test {
 }
 
 test "runtime and comptime slice" {
-    const ct_slice1 = @typeInfo(struct { f1: u16, f2: u8, f3: u8, f4: u8 }).Struct.fields;
-    const ct_slice2 = @typeInfo(struct { f1: u16, f2: u8, f3: u8, f4: u8, f5: u8 }).Struct.fields;
-    const ct_slice3 = @typeInfo(struct { f1: u16, f2: u8, f3: u8, f4: u8, f5: u8, f6: u8 }).Struct.fields;
-    const ct_slice4 = @typeInfo(struct {}).Struct.fields;
+    const ct_slice1 = @typeInfo(struct { f1: u16, f2: u8, f3: u8, f4: u8 }).@"struct".fields;
+    const ct_slice2 = @typeInfo(struct { f1: u16, f2: u8, f3: u8, f4: u8, f5: u8 }).@"struct".fields;
+    const ct_slice3 = @typeInfo(struct { f1: u16, f2: u8, f3: u8, f4: u8, f5: u8, f6: u8 }).@"struct".fields;
+    const ct_slice4 = @typeInfo(struct {}).@"struct".fields;
     try formatter.format(ct_slice1, .{ .name = "ct_slice1" });
     try formatter.format(ct_slice2, .{ .name = "ct_slice2" });
     try formatter.format(ct_slice3, .{ .name = "ct_slice3" });
