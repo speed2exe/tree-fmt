@@ -126,7 +126,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                     .pointer => |p| {
                         // TODO: detect invalid pointers and print them as such
                         switch (p.size) {
-                            .One => {
+                            .one => {
                                 const addr: usize = @intFromPtr(arg);
                                 try self.writer.print(" " ++ address_fmt, .{addr});
 
@@ -157,7 +157,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                                 try self.writeChildComptime(.last, pointer_dereference);
                                 try self.formatValueRecursiveIndented(.last, arg.*);
                             },
-                            .Slice => {
+                            .slice => {
                                 if (!isComptime(arg)) {
                                     try self.writer.print(" " ++ address_fmt, .{@intFromPtr(arg.ptr)});
                                 }
@@ -171,9 +171,9 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                                     try self.formatSliceValues(arg);
                                 }
                             },
-                            .Many, .C => {
+                            .many, .c => {
                                 try self.writer.print(" " ++ address_fmt, .{@intFromPtr(arg)});
-                                _ = p.sentinel orelse return;
+                                _ = p.sentinel() orelse return;
                                 if (p.child == u8 and self.settings.print_u8_chars) {
                                     try self.writer.print(" \"{s}\"", .{arg});
                                     if (self.settings.ignore_u8_in_lists) return;
