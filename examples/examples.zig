@@ -6,6 +6,14 @@ test {
     std.testing.refAllDeclsRecursive(@import("./struct_with_all_types.zig"));
 }
 
+test "empty strings" {
+    const empty_slice: []const u8 = "";
+    try formatter.format(empty_slice, .{});
+
+    const empty_sentinel: [*:0]const u8 = "";
+    try formatter.format(empty_sentinel, .{});
+}
+
 test "runtime and comptime slice" {
     const ct_slice1 = @typeInfo(struct { f1: u16, f2: u8, f3: u8, f4: u8 }).@"struct".fields;
     const ct_slice2 = @typeInfo(struct { f1: u16, f2: u8, f3: u8, f4: u8, f5: u8 }).@"struct".fields;

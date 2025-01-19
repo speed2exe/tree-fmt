@@ -165,20 +165,17 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                                     try self.writer.print(" \"{s}\"", .{arg});
                                     if (self.settings.ignore_u8_in_lists) return;
                                 }
-                                if (arg.len == 0) {
-                                    try self.writer.writeAll(empty);
-                                } else {
-                                    try self.formatSliceValues(arg);
-                                }
+                                try self.formatSliceValues(arg);
                             },
                             .many, .c => {
                                 try self.writer.print(" " ++ address_fmt, .{@intFromPtr(arg)});
-                                _ = p.sentinel() orelse return;
+                                _ = p.sentinel() orelse return; // if it doesn't have sentinel, it is not possible to safely print the values, so return
                                 if (p.child == u8 and self.settings.print_u8_chars) {
                                     try self.writer.print(" \"{s}\"", .{arg});
                                     if (self.settings.ignore_u8_in_lists) return;
                                 }
-                                try self.formatSliceValues(std.mem.span(arg));
+                                const spanned = std.mem.span(arg);
+                                try self.formatSliceValues(spanned);
                             },
                         }
                     },
@@ -295,6 +292,8 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
             }
 
             fn formatSliceValues(self: *Instance, slice: anytype) !void {
+                if (slice.len == 0) return self.writer.writeAll(empty);
+
                 if (self.settings.slice_elem_limit == 0) {
                     return try self.writeIndexingLimitMessage(self.settings.slice_elem_limit, slice.len);
                 }
