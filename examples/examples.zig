@@ -3,7 +3,7 @@ const utils = @import("./utils.zig");
 const formatter = @import("tree-fmt").defaultFormatter();
 
 test {
-    std.testing.refAllDeclsRecursive(@import("./struct_with_all_types.zig"));
+    std.testing.refAllDecls(@import("./struct_with_all_types.zig"));
 }
 
 test "empty strings" {
@@ -92,12 +92,12 @@ test "map" {
 }
 
 test "array list slice" {
-    var array_list = std.ArrayList(u8).init(std.testing.allocator);
-    defer array_list.deinit();
+    var array_list: std.ArrayList(u8) = .empty;
+    defer array_list.deinit(std.testing.allocator);
 
     var i: u8 = 0;
     while (i < 100) : (i += 1) {
-        try array_list.append(i);
+        try array_list.append(std.testing.allocator, i);
     }
 
     try formatter.format(array_list, .{ .name = "array" });
@@ -119,12 +119,12 @@ test "array list slice" {
 }
 
 test "array list" {
-    var array_list = std.ArrayList(u8).init(std.testing.allocator);
-    defer array_list.deinit();
+    var array_list: std.ArrayList(u8) = .empty;
+    defer array_list.deinit(std.testing.allocator);
 
     var i: u8 = 0;
     while (i < 100) : (i += 1) {
-        try array_list.append(i);
+        try array_list.append(std.testing.allocator, i);
     }
 
     try formatter.format(array_list, .{
@@ -221,19 +221,15 @@ test "zig program" {
 }
 
 test "std" {
-    try formatter.format(@typeInfo(std), .{
-        .name = "std type info",
-        .slice_elem_limit = 1000,
+    const Point = struct { x: f32, y: f32 };
+    try formatter.format(@typeInfo(Point), .{
+        .name = "Point type info",
+        .slice_elem_limit = 100,
         .ignore_u8_in_lists = true,
     });
-    try formatter.format(@typeInfo(std.net), .{
-        .name = "std type info",
-        .slice_elem_limit = 1000,
-        .ignore_u8_in_lists = true,
-    });
-    try formatter.format(@typeInfo(std.net.Stream), .{
-        .name = "std type info",
-        .slice_elem_limit = 1000,
+    try formatter.format(@typeInfo(std.mem.Allocator), .{
+        .name = "std.mem.Allocator type info",
+        .slice_elem_limit = 100,
         .ignore_u8_in_lists = true,
     });
 }

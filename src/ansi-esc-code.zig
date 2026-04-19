@@ -6,6 +6,7 @@ pub fn comptimeFmtInColor(
     comptime fmt: []const u8,
     args: anytype,
 ) []const u8 {
+    @setEvalBranchQuota(1_000_000);
     return std.fmt.comptimePrint(color.toEscapeCode() ++ fmt ++ reset, args);
 }
 

@@ -67,11 +67,12 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
         }
 
         pub fn format(self: Self, arg: anytype, settings: TreeFormatterSettings) !void {
-            var prefix = std.ArrayList(u8).init(self.allocator);
-            defer prefix.deinit();
+            var prefix: std.ArrayList(u8) = .empty;
+            defer prefix.deinit(self.allocator);
             var counts_by_address = CountsByAddress.init(self.allocator);
             defer counts_by_address.deinit();
             var instance = Instance{
+                .allocator = self.allocator,
                 .prefix = &prefix,
                 .counts_by_address = &counts_by_address,
                 .settings = settings,
@@ -83,6 +84,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
         }
 
         const Instance = struct {
+            allocator: std.mem.Allocator,
             prefix: *std.ArrayList(u8),
             counts_by_address: *CountsByAddress,
             settings: TreeFormatterSettings,
@@ -213,8 +215,8 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                 defer self.prefix.shrinkRetainingCapacity(backup_len);
 
                 switch (child_prefix) {
-                    .non_last => try self.prefix.appendSlice(indent_bar),
-                    .last => try self.prefix.appendSlice(indent_blank),
+                    .non_last => try self.prefix.appendSlice(self.allocator, indent_bar),
+                    .last => try self.prefix.appendSlice(self.allocator, indent_blank),
                 }
                 try self.formatRecursive(arg);
             }
@@ -279,6 +281,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
             }
 
             fn formatSliceValuesComptime(self: *Instance, slice: anytype) !void {
+                @setEvalBranchQuota(1_000_000);
                 inline for (slice, 0..) |item, index| {
                     if (index == self.settings.slice_elem_limit) {
                         return try self.writeIndexingLimitMessage(self.settings.slice_elem_limit, slice.len);
@@ -300,6 +303,12 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
 
                 if (isComptime(slice)) {
                     return try self.formatSliceValuesComptime(slice);
+                }
+
+                // Comptime-only element types (e.g. builtin.Type.StructField) cannot be
+                // iterated at runtime. If the value wasn't comptime-known above, skip display.
+                if (comptime isComptimeOnlyType(@typeInfo(@TypeOf(slice)).pointer.child)) {
+                    return try self.writer.writeAll("(comptime-only)");
                 }
 
                 if (slice.len > self.settings.slice_elem_limit) {
@@ -361,14 +370,14 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
 
                 const backup_len = self.prefix.items.len;
                 defer self.prefix.shrinkRetainingCapacity(backup_len);
-                try self.prefix.appendSlice(indent_bar);
+                try self.prefix.appendSlice(self.allocator, indent_bar);
 
                 try self.writeChildComptime(.last, items_method);
                 const fields = @typeInfo(arr_type.Field).@"enum".fields;
                 inline for (fields, 0..) |field, index| {
                     const backup_len2 = self.prefix.items.len;
                     defer self.prefix.shrinkRetainingCapacity(backup_len2);
-                    try self.prefix.appendSlice(indent_blank);
+                    try self.prefix.appendSlice(self.allocator, indent_blank);
 
                     const child_prefix = if (index == fields.len - 1) .last else .non_last;
                     try self.writeChild(child_prefix, comptimeInColor(Color.green, "(.{s})"), .{field.name});
@@ -384,7 +393,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                 var index: usize = 0;
                 while (index < arr.len) : (index += 1) {
                     defer self.prefix.shrinkRetainingCapacity(backup_len);
-                    try self.prefix.appendSlice(indent_bar);
+                    try self.prefix.appendSlice(self.allocator, indent_bar);
 
                     if (index == self.settings.multi_array_list_get_limit) {
                         return try self.writeIndexingLimitMessage(self.settings.multi_array_list_get_limit, arr.len);
@@ -413,7 +422,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                 const backup_len = self.prefix.items.len;
                 while (it.next()) |entry| : (count += 1) {
                     defer self.prefix.shrinkRetainingCapacity(backup_len);
-                    try self.prefix.appendSlice(indent_bar);
+                    try self.prefix.appendSlice(self.allocator, indent_bar);
 
                     if (count > self.settings.hash_map_entry_limit) {
                         return try self.writeIndexingLimitMessage(self.settings.hash_map_entry_limit, map.count());
@@ -448,6 +457,28 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
 
 inline fn isComptime(val: anytype) bool {
     return @typeInfo(@TypeOf(.{val})).@"struct".fields[0].is_comptime;
+}
+
+fn isComptimeOnlyType(comptime T: type) bool {
+    switch (@typeInfo(T)) {
+        .type, .comptime_int, .comptime_float, .noreturn, .undefined, .null, .enum_literal => return true,
+        .@"struct" => |s| {
+            inline for (s.fields) |f| {
+                if (isComptimeOnlyType(f.type)) return true;
+            }
+            return false;
+        },
+        .@"union" => |u| {
+            inline for (u.fields) |f| {
+                if (isComptimeOnlyType(f.type)) return true;
+            }
+            return false;
+        },
+        .optional => |o| return isComptimeOnlyType(o.child),
+        .array => |a| return isComptimeOnlyType(a.child),
+        .pointer => |p| return isComptimeOnlyType(p.child),
+        else => return false,
+    }
 }
 
 inline fn isMultiArrayList(comptime T: type) bool {
