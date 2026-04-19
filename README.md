@@ -36,13 +36,13 @@ zig build test -Dtest-filter="anon struct 1"
     .dependencies = .{
         .tree_fmt = .{
             .url = "https://github.com/speed2exe/tree-fmt/archive/0.16.0.tar.gz",
-            // just do `zig build`, get the error and replace with expected hash
-            .hash = "...",
+            .hash = "tree_fmt-0.16.0-zrQKk7_GAABRaLF_ryiV1tF7R4u5h3KOyp2qVBGgzTn_",
         },
     },
     .paths = .{ "" },
 }
 ```
+> **Tip:** You can also run `zig fetch --save https://github.com/speed2exe/tree-fmt/archive/0.16.0.tar.gz` to auto-populate the hash.
 - `build.zig`
 ```zig
 pub fn build(b: *std.Build) void {
