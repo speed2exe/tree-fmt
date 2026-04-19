@@ -35,10 +35,9 @@ zig build test -Dtest-filter="anon struct 1"
     .version = "0.0.1",
     .dependencies = .{
         .tree_fmt = .{
-            // c6398b225f15cdbe35b3951920f634ffd1c65c12 is just commit hash
-            .url = "https://github.com/speed2exe/tree-fmt/archive/c6398b225f15cdbe35b3951920f634ffd1c65c12.tar.gz",
-            // just do `zig build`, get the error code and replace with expected hash
-            .hash = "12201dceb9a9c2c9a6fc83105a7f408132b9ab69173b266e7df2af2c1dd6f814cd51",
+            .url = "https://github.com/speed2exe/tree-fmt/archive/0.16.0.tar.gz",
+            // just do `zig build`, get the error and replace with expected hash
+            .hash = "...",
         },
     },
     .paths = .{ "" },
@@ -89,29 +88,31 @@ const std = @import("std");
 // add imports here
 const treeFormatter = @import("tree-fmt").treeFormatter;
 
-pub fn main() !void {
-    // initialize your allocator
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    const allocator = gpa.allocator();
-    defer {
-        const leaked = gpa.deinit();
-        if (leaked) {
-            @panic("leaked memory!");
-        }
-    }
+pub fn main(init: std.process.Init) !void {
+    const allocator = init.gpa;
 
-    // initialize a writer (std.io.Writer)
-    // tips if you print a lot: wrap with std.io.BufferedWriter to improve performance
-    var w = std.io.getStdOut().writer();
+    // any writer implementing print(fmt, args) and writeAll(bytes) works
+    // here we use std.debug.print via a simple wrapper
+    const DebugWriter = struct {
+        pub fn print(self: @This(), comptime fmt: []const u8, args: anytype) !void {
+            _ = self;
+            std.debug.print(fmt, args);
+        }
+        pub fn writeAll(self: @This(), bytes: []const u8) !void {
+            _ = self;
+            std.debug.print("{s}", .{bytes});
+        }
+    };
+    var w = DebugWriter{};
 
     // initialize TreeFormatter with allocator and writer
     var tree_formatter = treeFormatter(allocator, w);
 
     // initialize your value
-    var sentinel_array: [*:0]const u8 = "hello world";
+    const sentinel_array: [*:0]const u8 = "hello world";
 
-    // call the method with writer and value
-    try tree_formatter.formatValueWithId(sentinel_array, .{
+    // call the method with value
+    try tree_formatter.format(sentinel_array, .{
         // .name = "sentinel_array", <-- example setting
         // you can find settings at @import("./src/tree_fmt.zig").TreeFormatterSettings;
         // you can also leave it blank to use default settings
