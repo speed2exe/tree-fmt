@@ -15,10 +15,13 @@ test "empty strings" {
 }
 
 test "runtime and comptime slice" {
-    const ct_slice1 = @typeInfo(struct { f1: u16, f2: u8, f3: u8, f4: u8 }).@"struct".fields;
-    const ct_slice2 = @typeInfo(struct { f1: u16, f2: u8, f3: u8, f4: u8, f5: u8 }).@"struct".fields;
-    const ct_slice3 = @typeInfo(struct { f1: u16, f2: u8, f3: u8, f4: u8, f5: u8, f6: u8 }).@"struct".fields;
-    const ct_slice4 = @typeInfo(struct {}).@"struct".fields;
+    const ct_slice1 = @typeInfo(struct { f1: u16, f2: u8, f3: u8, f4: u8 }).@"struct".field_names;
+    const ct_slice2 = @typeInfo(struct { f1: u16, f2: u8, f3: u8, f4: u8, f5: u8 }).@"struct".field_names;
+    const ct_slice3 = @typeInfo(struct { f1: u16, f2: u8, f3: u8, f4: u8, f5: u8, f6: u8 }).@"struct".field_names;
+    const ct_slice4 = @typeInfo(struct {}).@"struct".field_names;
+    // slices whose element type is comptime-only
+    const ct_field_types1 = @typeInfo(struct { f1: u16, f2: u8 }).@"struct".field_types;
+    try formatter.format(ct_field_types1, .{ .name = "ct_field_types1" });
     try formatter.format(ct_slice1, .{ .name = "ct_slice1" });
     try formatter.format(ct_slice2, .{ .name = "ct_slice2" });
     try formatter.format(ct_slice3, .{ .name = "ct_slice3" });
@@ -214,7 +217,7 @@ test "zig program" {
         \\     std.debug.print("hello {s}", .{"world"});
         \\ }
     ;
-    var ast = try std.zig.Ast.parse(std.testing.allocator, zig_code, .zig);
+    var ast = try std.zig.Ast.parse(std.testing.allocator, zig_code, .{});
     defer ast.deinit(std.testing.allocator);
     try formatter.format(ast.tokens, .{ .name = "ast" });
     try formatter.format(@typeInfo(@TypeOf(ast.tokens)), .{ .name = "ast type info" });

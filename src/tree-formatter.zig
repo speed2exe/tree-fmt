@@ -1,5 +1,4 @@
 const std = @import("std");
-const builtin = std.builtin;
 
 const TreeFormatterSettings = @import("./tree-fmt.zig").TreeFormatterSettings;
 
@@ -96,7 +95,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                 const arg_type = @TypeOf(arg);
                 switch (@typeInfo(arg_type)) {
                     .@"struct" => |s| {
-                        if (s.fields.len == 0) return try self.writer.writeAll(empty);
+                        if (s.field_names.len == 0) return try self.writer.writeAll(empty);
 
                         // extra method formatting for some types
                         if (self.settings.format_multi_array_list and isMultiArrayList(arg_type)) {
@@ -190,9 +189,9 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                         }
                     },
                     .@"union" => |u| {
-                        if (u.fields.len == 0) return try self.writer.writeAll(empty);
+                        if (u.field_names.len == 0) return try self.writer.writeAll(empty);
                         if (u.tag_type) |_| {
-                            return try self.formatTaggedUnion(arg, u, @intFromEnum(arg));
+                            return try self.formatTaggedUnion(arg, u, @backingInt(arg));
                         }
                         try self.formatFieldValues(arg, u);
                     },
@@ -202,7 +201,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                         };
                         try self.formatValueRecursiveIndented(.last, value);
                     },
-                    .@"enum" => try self.writer.print(" {s} {} ({d})", .{ arrow, arg, @intFromEnum(arg) }),
+                    .@"enum" => try self.writer.print(" {s} {} ({d})", .{ arrow, arg, @backingInt(arg) }),
                     .@"fn" => {
                         // cant print any values for fn types
                     },
@@ -305,7 +304,7 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                     return try self.formatSliceValuesComptime(slice);
                 }
 
-                // Comptime-only element types (e.g. builtin.Type.StructField) cannot be
+                // Comptime-only element types (e.g. field_types) cannot be
                 // iterated at runtime. If the value wasn't comptime-known above, skip display.
                 if (comptime isComptimeOnlyType(@typeInfo(@TypeOf(slice)).pointer.child)) {
                     return try self.writer.writeAll("(comptime-only)");
@@ -325,17 +324,17 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                 try self.formatIndexedValue(.last, slice[last_index], last_index);
             }
 
-            fn formatFieldValues(self: *Instance, arg: anytype, arg_type: anytype) !void {
+            fn formatFieldValues(self: *Instance, arg: anytype, arg_info: anytype) !void {
                 // Note:
                 // This is set so that unions can be printed for all its values
                 // This can be removed if we are able to determine the active union
                 // field during ReleaseSafe and Debug builds,
                 @setRuntimeSafety(false);
 
-                inline for (arg_type.fields, 0..) |field, index| {
-                    const child_prefix = if (index == arg_type.fields.len - 1) .last else .non_last;
-                    try self.writeChildComptime(child_prefix, comptimeInColor(Color.yellow, "." ++ field.name));
-                    try self.formatValueRecursiveIndented(child_prefix, @field(arg, field.name));
+                inline for (arg_info.field_names, 0..) |field_name, index| {
+                    const child_prefix = if (index == arg_info.field_names.len - 1) .last else .non_last;
+                    try self.writeChildComptime(child_prefix, comptimeInColor(Color.yellow, "." ++ field_name));
+                    try self.formatValueRecursiveIndented(child_prefix, @field(arg, field_name));
                 }
             }
 
@@ -350,10 +349,10 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                     return try self.formatTaggedUnionComptime(arg);
                 }
 
-                inline for (arg_type.fields, 0..) |field, index| {
+                inline for (arg_type.field_names, 0..) |field_name, index| {
                     if (index == target_index) {
-                        try self.writeChildComptime(.last, comptimeInColor(Color.yellow, "." ++ field.name));
-                        return try self.formatValueRecursiveIndented(.last, @field(arg, field.name));
+                        try self.writeChildComptime(.last, comptimeInColor(Color.yellow, "." ++ field_name));
+                        return try self.formatValueRecursiveIndented(.last, @field(arg, field_name));
                     }
                 }
             }
@@ -373,15 +372,15 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                 try self.prefix.appendSlice(self.allocator, indent_bar);
 
                 try self.writeChildComptime(.last, items_method);
-                const fields = @typeInfo(arr_type.Field).@"enum".fields;
-                inline for (fields, 0..) |field, index| {
+                const field_names = @typeInfo(arr_type.Field).@"enum".field_names;
+                inline for (field_names, 0..) |field_name, index| {
                     const backup_len2 = self.prefix.items.len;
                     defer self.prefix.shrinkRetainingCapacity(backup_len2);
                     try self.prefix.appendSlice(self.allocator, indent_blank);
 
-                    const child_prefix = if (index == fields.len - 1) .last else .non_last;
-                    try self.writeChild(child_prefix, comptimeInColor(Color.green, "(.{s})"), .{field.name});
-                    const items = slice.items(@as(arr_type.Field, @enumFromInt(index)));
+                    const child_prefix = if (index == field_names.len - 1) .last else .non_last;
+                    try self.writeChild(child_prefix, comptimeInColor(Color.green, "(.{s})"), .{field_name});
+                    const items = slice.items(@as(arr_type.Field, @fromBackingInt(index)));
                     try self.formatValueRecursiveIndented(child_prefix, items);
                 }
             }
@@ -456,21 +455,21 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
 }
 
 inline fn isComptime(val: anytype) bool {
-    return @typeInfo(@TypeOf(.{val})).@"struct".fields[0].is_comptime;
+    return @typeInfo(@TypeOf(.{val})).@"struct".field_attrs[0].@"comptime";
 }
 
 fn isComptimeOnlyType(comptime T: type) bool {
     switch (@typeInfo(T)) {
         .type, .comptime_int, .comptime_float, .noreturn, .undefined, .null, .enum_literal => return true,
         .@"struct" => |s| {
-            inline for (s.fields) |f| {
-                if (isComptimeOnlyType(f.type)) return true;
+            inline for (s.field_types) |field_type| {
+                if (isComptimeOnlyType(field_type)) return true;
             }
             return false;
         },
         .@"union" => |u| {
-            inline for (u.fields) |f| {
-                if (isComptimeOnlyType(f.type)) return true;
+            inline for (u.field_types) |field_type| {
+                if (isComptimeOnlyType(field_type)) return true;
             }
             return false;
         },
@@ -490,5 +489,11 @@ inline fn isMultiArrayListSlice(comptime T: type) bool {
 }
 
 inline fn isHashMapUnmanaged(comptime T: type) bool {
-    return std.mem.containsAtLeast(u8, @typeName(T), 1, "HashMapUnmanaged") and @hasDecl(T, "KV") and @hasDecl(T, "Hash");
+    // Zig 0.17 renamed `std.HashMapUnmanaged` to `std.hash_map.Custom`,
+    // so the type name no longer contains "HashMapUnmanaged".
+    const type_name = @typeName(T);
+    const is_hash_map = std.mem.containsAtLeast(u8, type_name, 1, "HashMapUnmanaged") or
+        std.mem.startsWith(u8, type_name, "hash_map.Custom(") or
+        std.mem.startsWith(u8, type_name, "array_hash_map.Custom(");
+    return is_hash_map and @hasDecl(T, "KV") and @hasDecl(T, "Hash");
 }
