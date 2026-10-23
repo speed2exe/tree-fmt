@@ -4,6 +4,12 @@ const formatter = @import("tree-fmt").defaultFormatter();
 
 test {
     std.testing.refAllDecls(@import("./struct_with_all_types.zig"));
+
+    // print only scenarios, one per edge case
+    _ = @import("./edge_cases.zig");
+
+    // assertion based golden tests
+    _ = @import("./golden_tests.zig");
 }
 
 test "empty strings" {

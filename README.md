@@ -19,10 +19,19 @@
 ## Screenshot
 ![Screenshot](./images/screenshot.png)
 
-## Example
-- You can run one of the examples in the `examples` by executing the following command:
+## Tests
+- `zig build test` runs all of them.
+- The tests live in `examples` and come in three kinds:
+
+| File | What it does | Run only these |
+| --- | --- | --- |
+| `examples/examples.zig` | one test per common type, the tree is printed | `zig build test -Dtest-filter="anon struct 2"` |
+| `examples/edge_cases.zig` | one test per edge case (empty/zero sized values, every pointer kind, packed and misaligned structs, errors, deep nesting, limits set to `0`, ...), the tree is printed | `zig build test -Dtest-filter="edge"` |
+| `examples/golden_tests.zig` | asserts the rendered tree against an expected string, so layout regressions fail the build | `zig build test -Dtest-filter="golden"` |
+
+- You can run one of the examples by executing the following command:
 ```bash
-zig build test -Dtest-filter="anon struct 1"
+zig build test -Dtest-filter="anon struct 2"
 ```
 - You might need to remove `.zig-cache` to run it again without changes.
 
@@ -289,4 +298,19 @@ ast: multi_array_list.MultiArrayList(zig.Ast.TokenList__struct_999).Slice
 │ └─[1]: [*]u8 @1011bc010
 ├─.len: usize => 31
 └─.capacity: usize => 50
+```
+
+- `packed`, `extern` and misaligned structs (`zig build test -Dtest-filter="edge: packed"`)
+```
+packed: edge_cases.Packed
+├─.lo: u4 => 1
+├─.hi: u4 => 15
+├─.flag: u1 => 1
+└─.pad: u7 => 0
+extern: edge_cases.ExternLayout
+├─.tag: u8 => 9
+└─.value: u32 => 1234
+misaligned: edge_cases.Misaligned
+├─.byte: u8 => 1
+└─.word: u32 => 3735928559
 ```
