@@ -118,7 +118,9 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                     },
                     .vector => |v| {
                         if (v.child == u8 and self.settings.print_u8_chars) {
-                            try self.writer.print(" \"{s}\"", .{arg});
+                            // `{s}` is not supported for vectors, so coerce to an array first
+                            const bytes: [v.len]u8 = arg;
+                            try self.writer.print(" \"{s}\"", .{bytes});
                             if (self.settings.ignore_u8_in_lists) return;
                         }
                         if (v.len == 0) return try self.writer.writeAll(empty);
@@ -423,7 +425,9 @@ pub fn TreeFormatter(comptime StdIoWriter: type) type {
                     defer self.prefix.shrinkRetainingCapacity(backup_len);
                     try self.prefix.appendSlice(self.allocator, indent_bar);
 
-                    if (count > self.settings.hash_map_entry_limit) {
+                    // `>=` (not `>`) so that exactly `hash_map_entry_limit`
+                    // entries are printed, matching the other limits
+                    if (count >= self.settings.hash_map_entry_limit) {
                         return try self.writeIndexingLimitMessage(self.settings.hash_map_entry_limit, map.count());
                     }
                     if (count == map.count() - 1) {
