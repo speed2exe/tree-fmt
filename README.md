@@ -36,8 +36,7 @@ zig build test -Dtest-filter="anon struct 1"
     .dependencies = .{
         .tree_fmt = .{
             .url = "https://github.com/speed2exe/tree-fmt/archive/0.17.0.tar.gz",
-            // just do `zig build`, get the error and replace with expected hash
-            .hash = "...",
+            .hash = "tree_fmt-0.17.0-zrQKk57GAAC4GYV4Rrtsrv2T0pYcm86DHVYxqZ3Sym9j",
         },
     },
     .paths = .{ "" },
